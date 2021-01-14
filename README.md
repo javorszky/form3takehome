@@ -41,3 +41,28 @@ You may obtain a copy of the License at
 http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+
+
+## Implementation by Gabor Javorszky
+
+### Project layout
+
+The entry point is in `cmd/accountclieng.go`. In that `main` package I first marshal all the configurations that the application will need, and exit if something is missing / misconfigured. There's no point continuing startup sequence if I know it's not going to work.
+
+Local packages are all withing the `pkg/<pacakgename>` folders.
+
+
+
+### Test package
+
+I've been using the https://github.com/stretchr/testify test library for all of my testing and mock generation purposes for the past year. It's served me well, I am comfortable using it, and it makes reading and writing tests more readable.
+
+### Config package
+
+Separating the config package into its own module allows me to test it in isolation, and gives me the flexibility to add / remove / change what information is passed into the rest of the application, what environment variables keys are used, I can do error checking and validation (make sure a setting that's supposed to be an URL exists, is not empty, is actually an URL).
+
+Normally I would use `spf13/viper` library to offload some of the work needed for that and allow me to parse .env files as well, but due to the limitations of the take home exercise I opted to rewrite a package in simple terms. Because the code is going to run in a docker container, and I can tell docker what environment variables to set, handling `os.GetEnv` and its siblings are enough for this use case.
+
+Note that I have not copy-pasted / adapted `spf13/viper`'s code, merely recreated the same functionality by myself.
+
+###
