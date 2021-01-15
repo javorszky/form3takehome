@@ -929,6 +929,17 @@ func TestValidateResource(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "HK is invalid when iban is provided",
+			args: args{
+				account: client.Resource{
+					Country: "HK",
+					BIC:     bicExample,
+					IBAN:    ibanExample,
+				},
+			},
+			wantErr: true,
+		},
+		{
 			name: "HK is invalid when bank id is provided, but is fewer than 3 digits",
 			args: args{
 				account: client.Resource{
