@@ -287,8 +287,8 @@ func validateGR(account Resource) error {
 func validateHK(account Resource) error {
 	errs := make([]string, 0)
 	// optional, 3 characters, Bank Code or Institution ID
-	if !reThreeDigits.MatchString(account.BankID) {
-		errs = append(errs, fmt.Sprintf("UK bank id is not correct format: '%s'", account.BankID))
+	if account.BankID != "" && !reThreeDigits.MatchString(account.BankID) {
+		errs = append(errs, fmt.Sprintf("HK bank id is not correct format: '%s'", account.BankID))
 	}
 
 	// BIC required
@@ -296,8 +296,8 @@ func validateHK(account Resource) error {
 		errs = append(errs, "BIC is required, got empty")
 	}
 
-	// Bank ID code is required, has to be HKNCC
-	if account.BankIDCode != "HKNCC" {
+	// Bank ID code is optional, if provided, has to be HKNCC
+	if account.BankIDCode != "" && account.BankIDCode != "HKNCC" {
 		errs = append(errs, fmt.Sprintf("Bank ID Code is not HKNCC, got '%s'", account.BankIDCode))
 	}
 
