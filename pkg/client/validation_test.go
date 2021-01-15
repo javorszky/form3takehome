@@ -1401,6 +1401,132 @@ func TestValidateResource(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		// PL
+		{
+			name: "PL is valid when all fields are valid, bic, account number, iban provided",
+			args: args{
+				account: client.Resource{
+					Country:       "PL",
+					BankID:        "12345678",
+					BIC:           bicExample,
+					BankIDCode:    "PLKNR",
+					AccountNumber: "1234567890123456",
+					IBAN:          ibanExample,
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "PL is valid when all fields are valid, bic, account number, iban not provided",
+			args: args{
+				account: client.Resource{
+					Country:    "PL",
+					BankID:     "12345678",
+					BankIDCode: "PLKNR",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "PL is invalid when bank id is not present",
+			args: args{
+				account: client.Resource{
+					Country:    "PL",
+					BankIDCode: "PLKNR",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "PL is invalid when bank id is fewer than 8 digits",
+			args: args{
+				account: client.Resource{
+					Country:    "PL",
+					BankID:     "1234567",
+					BankIDCode: "PLKNR",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "PL is invalid when bank id is more than 8 digits",
+			args: args{
+				account: client.Resource{
+					Country:    "PL",
+					BankID:     "123456789",
+					BankIDCode: "PLKNR",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "PL is invalid when bank id is 8 characters, but not all of them digits",
+			args: args{
+				account: client.Resource{
+					Country:    "PL",
+					BankID:     "1234567a",
+					BankIDCode: "PLKNR",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "PL is invalid when bank id code is not present",
+			args: args{
+				account: client.Resource{
+					Country: "PL",
+					BankID:  "12345678",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "PL is invalid when bank id code is not the correct value",
+			args: args{
+				account: client.Resource{
+					Country:    "PL",
+					BankID:     "12345678",
+					BankIDCode: "NO",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "PL is invalid when account number is provided, but fewer than 16 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "PL",
+					BankID:        "12345678",
+					BankIDCode:    "PLKNR",
+					AccountNumber: "123456789012345",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "PL is invalid when account number is provided, but more than 16 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "PL",
+					BankID:        "12345678",
+					BankIDCode:    "PLKNR",
+					AccountNumber: "12345678901234567",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "PL is invalid when account number is provided, is 16 characters, but not all digits",
+			args: args{
+				account: client.Resource{
+					Country:       "PL",
+					BankID:        "12345678",
+					BankIDCode:    "PLKNR",
+					AccountNumber: "123456789012345a",
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
