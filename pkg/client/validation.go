@@ -324,10 +324,12 @@ func validateIT(account Resource) error {
 	reAccount := reTenDigits
 
 	// Account number optional, 12 characters, generated if not provided
-	if account.AccountNumber != "" && !reTwelveDigits.MatchString(account.AccountNumber) {
+	if account.AccountNumber != "" {
 		accountPresent = true
 
-		errs = append(errs, fmt.Sprintf("account number was provided, but not 8 numbers: '%s'", account.AccountNumber))
+		if !reTwelveDigits.MatchString(account.AccountNumber) {
+			errs = append(errs, fmt.Sprintf("account number was provided, but not 12 numbers: '%s'", account.AccountNumber))
+		}
 	}
 
 	if accountPresent {
