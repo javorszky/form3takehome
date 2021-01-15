@@ -1016,6 +1016,294 @@ func TestValidateResource(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		// IT
+		{
+			name: "IT is valid when all fields are valid, bic, account number, iban are provided",
+			args: args{
+				account: client.Resource{
+					Country:       "IT",
+					BankID:        "12345678901",
+					BIC:           bicExample,
+					BankIDCode:    "ITNCC",
+					AccountNumber: "123456789012",
+					IBAN:          ibanExample,
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "IT is valid when all fields are valid, bic, account number, iban are not provided",
+			args: args{
+				account: client.Resource{
+					Country:    "IT",
+					BankID:     "1234567890",
+					BankIDCode: "ITNCC",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "IT is invalid when bank id code is missing",
+			args: args{
+				account: client.Resource{
+					Country: "IT",
+					BankID:  "1234567890",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "IT is invalid when bank id is missing",
+			args: args{
+				account: client.Resource{
+					Country:    "IT",
+					BankIDCode: "ITNCC",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "IT is invalid when bank id code is not correct value",
+			args: args{
+				account: client.Resource{
+					Country:    "IT",
+					BankID:     "1234567890",
+					BankIDCode: "NO",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "IT is invalid when account number is not provided, but bank id is fewer than 10 digits",
+			args: args{
+				account: client.Resource{
+					Country:    "IT",
+					BankID:     "123456789",
+					BankIDCode: "ITNCC",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "IT is invalid when account number is not provided, but bank id is more than 10 digits",
+			args: args{
+				account: client.Resource{
+					Country:    "IT",
+					BankID:     "12345678901",
+					BankIDCode: "ITNCC",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "IT is invalid when account number is not provided, bank id is 10 characters, but not all digits",
+			args: args{
+				account: client.Resource{
+					Country:    "IT",
+					BankID:     "123456789a",
+					BankIDCode: "ITNCC",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "IT is invalid when account number is provided, but bank id is fewer than 11 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "IT",
+					BankID:        "1234567890",
+					BankIDCode:    "ITNCC",
+					AccountNumber: "123456789012",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "IT is invalid when account number is provided, but bank id is more than 11 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "IT",
+					BankID:        "123456789012",
+					BankIDCode:    "ITNCC",
+					AccountNumber: "123456789012",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "IT is invalid when account number is provided, but bank id is 11 characters, not all digits",
+			args: args{
+				account: client.Resource{
+					Country:       "IT",
+					BankID:        "1234567890a",
+					BankIDCode:    "ITNCC",
+					AccountNumber: "123456789012",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "IT is invalid when account number is provided, but it's fewer than 12 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "IT",
+					BankID:        "12345678901",
+					BankIDCode:    "ITNCC",
+					AccountNumber: "12345678901",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "IT is invalid when account number is provided, but it's more than 12 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "IT",
+					BankID:        "12345678901",
+					BankIDCode:    "ITNCC",
+					AccountNumber: "1234567890123",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "IT is invalid when account number is provided, it's 12 characters, but not all of them digits",
+			args: args{
+				account: client.Resource{
+					Country:       "IT",
+					BankID:        "12345678901",
+					BankIDCode:    "ITNCC",
+					AccountNumber: "12345678901a",
+				},
+			},
+			wantErr: true,
+		},
+		// LU
+		{
+			name: "LU is valid when all fields are valid, bic, account number, iban provided",
+			args: args{
+				account: client.Resource{
+					Country:       "LU",
+					BankID:        "123",
+					BIC:           bicExample,
+					BankIDCode:    "LULUX",
+					AccountNumber: "1234567890123",
+					IBAN:          ibanExample,
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "LU is valid when all fields are valid, bic, account number, iban not provided",
+			args: args{
+				account: client.Resource{
+					Country:    "LU",
+					BankID:     "123",
+					BankIDCode: "LULUX",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "LU is invalid when bank id is missing",
+			args: args{
+				account: client.Resource{
+					Country:    "LU",
+					BankIDCode: "LULUX",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "LU is invalid when bank id is fewer than 3 digits",
+			args: args{
+				account: client.Resource{
+					Country:    "LU",
+					BankID:     "12",
+					BankIDCode: "LULUX",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "LU is invalid when bank id is more than 3 digits",
+			args: args{
+				account: client.Resource{
+					Country:    "LU",
+					BankID:     "1234",
+					BankIDCode: "LULUX",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "LU is invalid when bank id is 3 characters but not all digits",
+			args: args{
+				account: client.Resource{
+					Country:    "LU",
+					BankID:     "12a",
+					BankIDCode: "LULUX",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "LU is invalid when bank id code is missing",
+			args: args{
+				account: client.Resource{
+					Country: "LU",
+					BankID:  "123",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "LU is invalid when bank id code is present but wrong value",
+			args: args{
+				account: client.Resource{
+					Country:    "LU",
+					BankID:     "123",
+					BankIDCode: "NO",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "LU is invalid when account number is present, but fewer than 13 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "LU",
+					BankID:        "123",
+					BankIDCode:    "LULUX",
+					AccountNumber: "123456789012",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "LU is invalid when account number is present, but more than 13 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "LU",
+					BankID:        "123",
+					BankIDCode:    "LULUX",
+					AccountNumber: "12345678901234",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "LU is invalid when account number is present, is 13 characters, but not all digits",
+			args: args{
+				account: client.Resource{
+					Country:       "LU",
+					BankID:        "123",
+					BankIDCode:    "LULUX",
+					AccountNumber: "123456789012a",
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
