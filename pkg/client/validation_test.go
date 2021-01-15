@@ -1779,6 +1779,304 @@ func TestValidateResource(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		// CH
+		{
+			name: "CH is valid when all fields are valid, bic, account number, iban provided",
+			args: args{
+				account: client.Resource{
+					Country:       "CH",
+					BankID:        "12345",
+					BIC:           bicExample,
+					BankIDCode:    "CHBCC",
+					AccountNumber: "123456789012",
+					IBAN:          ibanExample,
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "CH is valid when all fields are valid, bic, account number, iban not provided",
+			args: args{
+				account: client.Resource{
+					Country:    "CH",
+					BankID:     "12345",
+					BankIDCode: "CHBCC",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "CH is invalid when bank id is missing",
+			args: args{
+				account: client.Resource{
+					Country:    "CH",
+					BankIDCode: "CHBCC",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "CH is invalid when bank id is fewer than 5 digits",
+			args: args{
+				account: client.Resource{
+					Country:    "CH",
+					BankID:     "1234",
+					BankIDCode: "CHBCC",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "CH is invalid when bank id more than 5 digits",
+			args: args{
+				account: client.Resource{
+					Country:    "CH",
+					BankID:     "123456",
+					BankIDCode: "CHBCC",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "CH is invalid when bank id is 5 characters, not all of them digits",
+			args: args{
+				account: client.Resource{
+					Country:    "CH",
+					BankID:     "1234a",
+					BankIDCode: "CHBCC",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "CH is invalid when bank id code is missing",
+			args: args{
+				account: client.Resource{
+					Country: "CH",
+					BankID:  "12345",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "CH is invalid when bank id code is wrong value",
+			args: args{
+				account: client.Resource{
+					Country:    "CH",
+					BankID:     "12345",
+					BankIDCode: "NO",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "CH is invalid when account number is fewer than 12 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "CH",
+					BankID:        "12345",
+					BankIDCode:    "CHBCC",
+					AccountNumber: "12345678901",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "CH is invalid when account number is more than 12 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "CH",
+					BankID:        "12345",
+					BankIDCode:    "CHBCC",
+					AccountNumber: "1234567890123",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "CH is invalid when account number is 12 characters, not all digits",
+			args: args{
+				account: client.Resource{
+					Country:       "CH",
+					BankID:        "12345",
+					BankIDCode:    "CHBCC",
+					AccountNumber: "12345678901a",
+				},
+			},
+			wantErr: true,
+		},
+		// US
+		{
+			name: "US is valid when all fields are valid, account number provided, 6 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "US",
+					BankID:        "123456789",
+					BIC:           bicExample,
+					BankIDCode:    "USABA",
+					AccountNumber: "123456",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "US is valid when all fields are valid, account number provided, 17 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "US",
+					BankID:        "123456789",
+					BIC:           bicExample,
+					BankIDCode:    "USABA",
+					AccountNumber: "12345678901234567",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "US is valid when all fields are valid, account number not provided",
+			args: args{
+				account: client.Resource{
+					Country:    "US",
+					BankID:     "123456789",
+					BIC:        bicExample,
+					BankIDCode: "USABA",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "US is invalid when iban is provided",
+			args: args{
+				account: client.Resource{
+					Country:    "US",
+					BankID:     "123456789",
+					BIC:        bicExample,
+					BankIDCode: "USABA",
+					IBAN:       ibanExample,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "US is invalid when bank id is missing",
+			args: args{
+				account: client.Resource{
+					Country:    "US",
+					BIC:        bicExample,
+					BankIDCode: "USABA",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "US is invalid when bank id is fewer than 9 digits long",
+			args: args{
+				account: client.Resource{
+					Country:    "US",
+					BankID:     "12345678",
+					BIC:        bicExample,
+					BankIDCode: "USABA",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "US is invalid when bank id more than 9 digits long",
+			args: args{
+				account: client.Resource{
+					Country:    "US",
+					BankID:     "1234567890",
+					BIC:        bicExample,
+					BankIDCode: "USABA",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "US is invalid when bank id is 9 characters long, not all digits",
+			args: args{
+				account: client.Resource{
+					Country:    "US",
+					BankID:     "12345678a",
+					BIC:        bicExample,
+					BankIDCode: "USABA",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "US is invalid when bic is missing",
+			args: args{
+				account: client.Resource{
+					Country:    "US",
+					BankID:     "123456789",
+					BankIDCode: "USABA",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "US is invalid when bank id code is missing",
+			args: args{
+				account: client.Resource{
+					Country: "US",
+					BankID:  "123456789",
+					BIC:     bicExample,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "US is invalid when bank id code is not correct value",
+			args: args{
+				account: client.Resource{
+					Country:    "US",
+					BankID:     "123456789",
+					BIC:        bicExample,
+					BankIDCode: "NO",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "US is invalid when account number is fewer than 6 digits long",
+			args: args{
+				account: client.Resource{
+					Country:       "US",
+					BankID:        "123456789",
+					BIC:           bicExample,
+					BankIDCode:    "USABA",
+					AccountNumber: "12345",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "US is invalid when account number is more than 17 digits long",
+			args: args{
+				account: client.Resource{
+					Country:       "US",
+					BankID:        "123456789",
+					BIC:           bicExample,
+					BankIDCode:    "USABA",
+					AccountNumber: "123456789012345678",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "US is invalid when account number is correct length, but not all are digits",
+			args: args{
+				account: client.Resource{
+					Country:       "US",
+					BankID:        "123456789",
+					BIC:           bicExample,
+					BankIDCode:    "USABA",
+					AccountNumber: "123456789a",
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
