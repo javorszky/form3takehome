@@ -1304,6 +1304,103 @@ func TestValidateResource(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		// NL
+		{
+			name: "NL is valid when all fields are valid, account number, iban provided",
+			args: args{
+				account: client.Resource{
+					Country:       "NL",
+					BIC:           bicExample,
+					AccountNumber: "1234567890",
+					IBAN:          ibanExample,
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "NL is valid when all fields are valid, account number, iban not provided",
+			args: args{
+				account: client.Resource{
+					Country: "NL",
+					BIC:     bicExample,
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "NL is invalid when bank id is present and not empty",
+			args: args{
+				account: client.Resource{
+					Country: "NL",
+					BankID:  "NL",
+					BIC:     bicExample,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "NL is invalid when bic is not present",
+			args: args{
+				account: client.Resource{
+					Country: "NL",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "NL is invalid when bic is empty",
+			args: args{
+				account: client.Resource{
+					Country: "NL",
+					BIC:     "",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "NL is invalid when bank id code is present and not empty",
+			args: args{
+				account: client.Resource{
+					Country:    "NL",
+					BIC:        bicExample,
+					BankIDCode: "IDCODE",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "NL is invalid when account number is provided, but fewer than 10 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "NL",
+					BIC:           bicExample,
+					AccountNumber: "123456789",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "NL is invalid when account number is provided, but more than 10 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "NL",
+					BIC:           bicExample,
+					AccountNumber: "12345678901",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "NL is invalid when account number is provided, 10 characters, but not all digits",
+			args: args{
+				account: client.Resource{
+					Country:       "NL",
+					BIC:           bicExample,
+					AccountNumber: "123456789a",
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
