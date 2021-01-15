@@ -264,6 +264,42 @@ func TestValidateResource(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "AU is invalid when account number is fewer than 6 digits long",
+			args: args{
+				account: client.Resource{
+					Country:       "AU",
+					BIC:           bicExample,
+					BankIDCode:    "AUBSB",
+					AccountNumber: "12345",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "AU is invalid when account number is longer than 10 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "AU",
+					BIC:           bicExample,
+					BankIDCode:    "AUBSB",
+					AccountNumber: "12345678901",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "AU is invalid when account number is correct length, but starts with 0",
+			args: args{
+				account: client.Resource{
+					Country:       "AU",
+					BIC:           bicExample,
+					BankIDCode:    "AUBSB",
+					AccountNumber: "01234567",
+				},
+			},
+			wantErr: true,
+		},
 		// BE
 		{
 			name: "BE is valid when all fields are valid, bic, account number provided, 7 chars",
@@ -935,6 +971,15 @@ func TestValidateResource(t *testing.T) {
 					Country: "HK",
 					BIC:     bicExample,
 					IBAN:    ibanExample,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "HK is invalid when bic is missing",
+			args: args{
+				account: client.Resource{
+					Country: "HK",
 				},
 			},
 			wantErr: true,
@@ -2073,6 +2118,16 @@ func TestValidateResource(t *testing.T) {
 					BIC:           bicExample,
 					BankIDCode:    "USABA",
 					AccountNumber: "123456789a",
+				},
+			},
+			wantErr: true,
+		},
+		// unknown
+		{
+			name: "HU is invalid because it's not in the list of countries served",
+			args: args{
+				account: client.Resource{
+					Country: "HU",
 				},
 			},
 			wantErr: true,

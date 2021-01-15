@@ -64,7 +64,7 @@ func ValidateResource(account Resource) error {
 		return validateUS(account)
 	}
 
-	return nil
+	return fmt.Errorf("unsupported country code: %s", account.Country)
 }
 
 func validateGB(account Resource) error {
@@ -504,35 +504,66 @@ func validateCH(account Resource) error {
 }
 
 func validateUS(account Resource) error {
-	errs := make([]string, 0)
-	// required, 9 characters, ABA routing number
-	if !reNineDigits.MatchString(account.BankID) {
-		errs = append(errs, fmt.Sprintf("US bank id is not correct format: '%s'", account.BankID))
+	r, err := ibanNotSupported(bicRequired(account, nil))
+	r, err = accountNumberOptionalMust(r, err, reUSAccountNumber)
+	r, err = bankIDCodeMust(r, err, "USABA")
+	_, err = bankIDRequiredMust(r, err, reNineDigits)
+
+	return err
+}
+
+func bicRequired(r Resource, e error) (Resource, error) {
+	if r.BIC == "" {
+		return r, fmt.Errorf("BIC is required, was empty: %w", e)
 	}
 
-	// BIC required
-	if account.BIC == "" {
-		errs = append(errs, "BIC is required, got empty")
+	return r, e
+}
+
+func ibanNotSupported(r Resource, e error) (Resource, error) {
+	if r.IBAN != "" {
+		return r, fmt.Errorf("IBAN is not supported, got '%s': %w", r.IBAN, e)
 	}
 
-	// Bank ID code is required, has to be USABA
-	if account.BankIDCode != "USABA" {
-		errs = append(errs, fmt.Sprintf("Bank ID Code is not USABA, got '%s'", account.BankIDCode))
+	return r, e
+}
+
+func bankIDCodeMust(r Resource, e error, bankIDCode string) (Resource, error) {
+	if r.BankIDCode != bankIDCode {
+		return r, fmt.Errorf("bank ID Code is not '%s', got %s: %w", bankIDCode, r.BankIDCode, e)
 	}
 
-	// Account number optional, 6-17 characters, generated if not provided
-	if account.AccountNumber != "" && !reUSAccountNumber.MatchString(account.AccountNumber) {
-		errs = append(errs, fmt.Sprintf("account number was provided, but not 6-17 numbers: '%s'", account.AccountNumber))
+	return r, e
+}
+
+func bankIDRequiredMust(r Resource, e error, pattern *regexp.Regexp) (Resource, error) {
+	if !pattern.MatchString(r.BankID) {
+		return r, fmt.Errorf("%s bank id is not in correct format. '%s': %w", r.Country, r.BankID, e)
 	}
 
-	// IBAN: not supported, has to be empty
-	if account.IBAN != "" {
-		errs = append(errs, fmt.Sprintf("IBAN is not supported, has to be empty. Got '%s'", account.IBAN))
+	return r, e
+}
+
+func bankIDOptionalMust(r Resource, e error, pattern *regexp.Regexp) (Resource, error) {
+	if r.BankID != "" && !pattern.MatchString(r.BankID) {
+		return r, fmt.Errorf("%s bank id is not in correct format. '%s': %w", r.Country, r.BankID, e)
 	}
 
-	if len(errs) == 0 {
-		return nil
+	return r, e
+}
+
+func accountNumberRequiredMust(r Resource, e error, pattern *regexp.Regexp) (Resource, error) {
+	if !pattern.MatchString(r.AccountNumber) {
+		return r, fmt.Errorf("%s account number is not in correct format. '%s': %w", r.Country, r.AccountNumber, e)
 	}
 
-	return errors.New(strings.Join(errs, ", "))
+	return r, e
+}
+
+func accountNumberOptionalMust(r Resource, e error, pattern *regexp.Regexp) (Resource, error) {
+	if r.AccountNumber != "" && !pattern.MatchString(r.AccountNumber) {
+		return r, fmt.Errorf("%s account number is not in correct format. '%s': %w", r.Country, r.AccountNumber, e)
+	}
+
+	return r, e
 }
