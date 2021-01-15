@@ -24,6 +24,10 @@ func New(cfg config.Config, gmt *time.Location) Client {
 	}
 }
 
+func (c Client) Create(account Resource) (Resource, error) {
+	return Resource{}, nil
+}
+
 func (c Client) List() {
 }
 
