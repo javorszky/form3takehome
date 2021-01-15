@@ -1,3 +1,4 @@
+//nolint:dupl
 package client
 
 import (
@@ -325,6 +326,7 @@ func validateIT(account Resource) error {
 	// Account number optional, 12 characters, generated if not provided
 	if account.AccountNumber != "" && !reTwelveDigits.MatchString(account.AccountNumber) {
 		accountPresent = true
+
 		errs = append(errs, fmt.Sprintf("account number was provided, but not 8 numbers: '%s'", account.AccountNumber))
 	}
 
