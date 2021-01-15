@@ -28,9 +28,12 @@ func (c Client) List() {
 }
 
 // addHeaders will decorate a header with the needed key/value pairs. If the body is not empty, it also adds the
-// Content-Type header. The Content-Length header is not added automatically, because per the http documentation of go,
-// if it's not set, and the total size of all written data is under a few KB and there are no Flush calls, the
-// Content-Length header will be added automatically.
+// Content-Type header.
+//
+// Ideally the Content-Length header should not be added automatically, because per the http documentation of go, if
+// it's not set, and the total size of all written data is under a few KB and there are no Flush calls, the
+// Content-Length header will be added automatically on A Write call. I' adding it here regardless so it shows up for
+// the tests.
 //
 // Authorization headers are not added per the spec of the take home exercise.
 func (c Client) addHeaders(r *http.Request) *http.Request {

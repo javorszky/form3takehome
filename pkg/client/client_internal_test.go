@@ -121,11 +121,15 @@ func TestClient_addHeaders(t *testing.T) {
 			}
 
 			// Check the Date header separately
-			headerDate, err := time.Parse(time.RFC1123, got.Header.Get("Date"))
+			headerDate := got.Header.Get("Date")
+			if !strings.HasSuffix(headerDate, "GMT") {
+				t.Errorf("header date should end with GMT. It doesn't. Date was %s", headerDate)
+			}
+			parsedHeaderDate, err := time.Parse(time.RFC1123, headerDate)
 			if err != nil {
 				t.Fatalf("could not parse the header date into a time.Time struct: %s", err)
 			}
-			assert.WithinDuration(t, headerDate, time.Now(), testHeaderDateThreshold*time.Second)
+			assert.WithinDuration(t, parsedHeaderDate, time.Now(), testHeaderDateThreshold*time.Second)
 		})
 	}
 }
