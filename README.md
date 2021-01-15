@@ -42,20 +42,17 @@ http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
-
 ## Implementation by Gabor Javorszky
 
 ### Project layout
 
-The entry point is in `cmd/accountclieng.go`. In that `main` package I first marshal all the configurations that the application will need, and exit if something is missing / misconfigured. There's no point continuing startup sequence if I know it's not going to work.
+The entry point is in `cmd/accountclient.go`. In that `main` package I first marshal all the configurations that the application will need, and exit if something is missing / misconfigured. There's no point continuing startup sequence if I know it's not going to work.
 
 Local packages are all withing the `pkg/<pacakgename>` folders.
 
+### Testing
 
-
-### Test package
-
-I've been using the https://github.com/stretchr/testify test library for all of my testing and mock generation purposes for the past year. It's served me well, I am comfortable using it, and it makes reading and writing tests more readable.
+I've been using the https://github.com/stretchr/testify test library for all of my testing and mock generation purposes for the past year. It's served me well, I am comfortable using it, and it makes reading and writing tests more readable as well as allowing me to use convenience assertions like "is this datetime within 15 seconds of this other datetime?" Without the library I would write helper functions to do the checking manually.
 
 ### Config package
 
@@ -65,4 +62,12 @@ Normally I would use `spf13/viper` library to offload some of the work needed fo
 
 Note that I have not copy-pasted / adapted `spf13/viper`'s code, merely recreated the same functionality by myself.
 
-###
+### Client package
+
+This is responsible for talking to the test API in the form3 supplied docker image. There's a `New` function that will return a configured Client struct with the base url and the GMT `time.Location` in it. I'm passing in the location because the `New` function should not return an error, which means I had to move functionality that could produce an error outside it. The thinking is that if the application can't create the GMT `time.Location`, it should stop the startup sequence because it won't be able to add the httpdate to the request either way, and there's a bigger problem with the Go runtime in the machine in that case, like failed to download the timezone information, or can't access it on the system.
+
+I've created an `addHeaders` function that would decorate a request, so I don't need to worry about having to add those in each method. This also makes it testable and central, so if I need to fix something, I can do it in one place. Plus it's small, easy to understand.
+
+There's also a helper function that will return the current httpdate in the format needed. Per the [MDN documentation on the Date header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Date) the relevant rfc is 7231 section 7.1.1.2, with the format being described in section 7.1.1.1. Go has a builtin time format in the form of `time.RFC1123` which seems to only differ from the one we want in the timezone. The helper function forces the current time to be represented in GMT before being formatted with the RFC1123 format. 
+
+This is also why we need the GMT `time.Location` on the Client struct, so we don't need to create the location each time this helper function is called. 
