@@ -145,6 +145,7 @@ issues:
         - errcheck
         - dupl
         - gosec
+        - gocognit
     # Exclude lll issues for long lines with go:generate
     - linters:
         - lll

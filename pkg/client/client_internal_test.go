@@ -39,6 +39,16 @@ func TestClient_addHeaders(t *testing.T) {
 		t.Fatalf("could not create a test request with body: %s", err)
 	}
 
+	requestEmptyBody, err := http.NewRequestWithContext(
+		context.TODO(),
+		http.MethodPost,
+		testURL,
+		strings.NewReader(""),
+	)
+	if err != nil {
+		t.Fatalf("could not create a test request with empty body: %s", err)
+	}
+
 	type fields struct {
 		BaseURL      string
 		DateLocation *time.Location
@@ -62,6 +72,20 @@ func TestClient_addHeaders(t *testing.T) {
 			},
 			args: args{
 				r: requestNoBody,
+			},
+			wantHeaders: map[string]string{
+				"Accept": testContentType,
+				"Host":   testURL,
+			},
+		},
+		{
+			name: "decorates request with headers with empty body present",
+			fields: fields{
+				BaseURL:      testURL,
+				DateLocation: gmtLoc,
+			},
+			args: args{
+				r: requestEmptyBody,
 			},
 			wantHeaders: map[string]string{
 				"Accept": testContentType,
