@@ -893,6 +893,118 @@ func TestValidateResource(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		// HK
+		{
+			name: "HK is valid when all fields are valid, bank id, bank id code, account number provided 9 chars",
+			args: args{
+				account: client.Resource{
+					Country:       "HK",
+					BankID:        "123",
+					BIC:           bicExample,
+					BankIDCode:    "HKNCC",
+					AccountNumber: "123456789",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "HK is valid when all fields are valid, bank id, bank id code not provided, account number provided 12 chars",
+			args: args{
+				account: client.Resource{
+					Country:       "HK",
+					BIC:           bicExample,
+					AccountNumber: "123456789012",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "HK is valid when all fields are valid, bank id, bank id code, account number not provided",
+			args: args{
+				account: client.Resource{
+					Country: "HK",
+					BIC:     bicExample,
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "HK is invalid when bank id is provided, but is fewer than 3 digits",
+			args: args{
+				account: client.Resource{
+					Country: "HK",
+					BankID:  "12",
+					BIC:     bicExample,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "HK is invalid when bank id is provided, but more than 3 digits",
+			args: args{
+				account: client.Resource{
+					Country: "HK",
+					BankID:  "1234",
+					BIC:     bicExample,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "HK is invalid when bank id is provided, 3 characters, but not all digits",
+			args: args{
+				account: client.Resource{
+					Country: "HK",
+					BankID:  "12a",
+					BIC:     bicExample,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "HK is invalid when bank id code is provided, but is not the required value",
+			args: args{
+				account: client.Resource{
+					Country:    "HK",
+					BIC:        bicExample,
+					BankIDCode: "NO",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "HK is invalid when account number is provided, but fewer than 9 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "HK",
+					BIC:           bicExample,
+					AccountNumber: "12345678",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "HK is invalid when account number is provided, but more than 12 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "HK",
+					BIC:           bicExample,
+					AccountNumber: "1234567890123",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "HK is invalid when account number is provided, is 10 characters, but not all of them digits",
+			args: args{
+				account: client.Resource{
+					Country:       "HK",
+					BIC:           bicExample,
+					AccountNumber: "123456789a",
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
