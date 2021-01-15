@@ -56,7 +56,7 @@ I've been using the https://github.com/stretchr/testify test library for all of 
 
 ### Config package
 
-Separating the config package into its own module allows me to test it in isolation, and gives me the flexibility to add / remove / change what information is passed into the rest of the application, what environment variables keys are used, I can do error checking and validation (make sure a setting that's supposed to be an URL exists, is not empty, is actually an URL).
+Separating the config package into its own module allows me to test it in isolation, and gives me the flexibility to add / remove / change what information is passed into the rest of the application, what environment variable keys are used, I can do error checking and validation (make sure a setting that's supposed to be an URL exists, is not empty, is actually an URL).
 
 Normally I would use `spf13/viper` library to offload some of the work needed for that and allow me to parse .env files as well, but due to the limitations of the take home exercise I opted to rewrite a package in simple terms. Because the code is going to run in a docker container, and I can tell docker what environment variables to set, handling `os.GetEnv` and its siblings are enough for this use case.
 
