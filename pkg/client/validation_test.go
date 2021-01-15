@@ -515,6 +515,258 @@ func TestValidateResource(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		// FR
+		{
+			name: "FR is valid when all fields are valid, bic, account number, iban provided",
+			args: args{
+				account: client.Resource{
+					Country:       "FR",
+					BankID:        "1234567890",
+					BIC:           bicExample,
+					BankIDCode:    "FR",
+					AccountNumber: "1234567890",
+					IBAN:          ibanExample,
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "FR is valid when all fields are valid, bic, account number, iban not provided",
+			args: args{
+				account: client.Resource{
+					Country:    "FR",
+					BankID:     "1234567890",
+					BankIDCode: "FR",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "FR is invalid when bank id is fewer than 10 digits",
+			args: args{
+				account: client.Resource{
+					Country:    "FR",
+					BankID:     "123456789",
+					BankIDCode: "FR",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "FR is invalid when bank id is more than 10 digits",
+			args: args{
+				account: client.Resource{
+					Country:    "FR",
+					BankID:     "12345678901",
+					BankIDCode: "FR",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "FR is invalid when bank id is 10 characters, not all digits",
+			args: args{
+				account: client.Resource{
+					Country:    "FR",
+					BankID:     "123456789a",
+					BankIDCode: "FR",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "FR is invalid when bank id code is not FR",
+			args: args{
+				account: client.Resource{
+					Country:    "FR",
+					BankID:     "1234567890",
+					BankIDCode: "NO",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "FR is invalid when bank id missing",
+			args: args{
+				account: client.Resource{
+					Country:    "FR",
+					BankIDCode: "FR",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "FR is invalid when bank id code is missing",
+			args: args{
+				account: client.Resource{
+					Country: "FR",
+					BankID:  "1234567890",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "FR is invalid when account is provided, but is fewer than 10 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "FR",
+					BankID:        "1234567890",
+					BankIDCode:    "FR",
+					AccountNumber: "123456789",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "FR is invalid when account is provided, but is more than 10 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "FR",
+					BankID:        "1234567890",
+					BankIDCode:    "FR",
+					AccountNumber: "12345678901",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "FR is invalid when account is provided, is 10 characters, but not all digits",
+			args: args{
+				account: client.Resource{
+					Country:       "FR",
+					BankID:        "1234567890",
+					BankIDCode:    "FR",
+					AccountNumber: "123456789a",
+				},
+			},
+			wantErr: true,
+		},
+		// DE
+		{
+			name: "DE is valid when all fields are valid, bic, account number, iban provided",
+			args: args{
+				account: client.Resource{
+					Country:       "DE",
+					BankID:        "12345678",
+					BIC:           bicExample,
+					BankIDCode:    "DEBLZ",
+					AccountNumber: "1234567",
+					IBAN:          ibanExample,
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "DE is valid when all fields are valid, bic, account number, iban not provided",
+			args: args{
+				account: client.Resource{
+					Country:    "DE",
+					BankID:     "12345678",
+					BankIDCode: "DEBLZ",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "DE is invalid when bank id is fewer than 8 digits",
+			args: args{
+				account: client.Resource{
+					Country:    "DE",
+					BankID:     "1234567",
+					BankIDCode: "DEBLZ",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "DE is invalid when bank id is more than 8 digits",
+			args: args{
+				account: client.Resource{
+					Country:    "DE",
+					BankID:     "123456789",
+					BankIDCode: "DEBLZ",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "DE is invalid when bank id is 8 characters, not all digits",
+			args: args{
+				account: client.Resource{
+					Country:    "DE",
+					BankID:     "1234567a",
+					BankIDCode: "DEBLZ",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "DE is invalid when bank id is missing",
+			args: args{
+				account: client.Resource{
+					Country:    "DE",
+					BankIDCode: "DEBLZ",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "DE is invalid when bank id code is missing",
+			args: args{
+				account: client.Resource{
+					Country: "DE",
+					BankID:  "12345678",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "DE is invalid when bank id code is not the correct value",
+			args: args{
+				account: client.Resource{
+					Country:    "DE",
+					BankID:     "12345678",
+					BankIDCode: "NO",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "DE is invalid when account is provided, but fewer than 7 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "DE",
+					BankID:        "12345678",
+					BankIDCode:    "DEBLZ",
+					AccountNumber: "123456",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "DE is invalid when account is provided, but more than 7 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "DE",
+					BankID:        "12345678",
+					BankIDCode:    "DEBLZ",
+					AccountNumber: "12345678",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "DE is invalid when account is provided, is 7 characters, not all digits",
+			args: args{
+				account: client.Resource{
+					Country:       "DE",
+					BankID:        "12345678",
+					BankIDCode:    "DEBLZ",
+					AccountNumber: "123456a",
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
