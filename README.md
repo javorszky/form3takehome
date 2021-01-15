@@ -71,3 +71,13 @@ I've created an `addHeaders` function that would decorate a request, so I don't 
 There's also a helper function that will return the current httpdate in the format needed. Per the [MDN documentation on the Date header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Date) the relevant rfc is 7231 section 7.1.1.2, with the format being described in section 7.1.1.1. Go has a builtin time format in the form of `time.RFC1123` which seems to only differ from the one we want in the timezone. The helper function forces the current time to be represented in GMT before being formatted with the RFC1123 format. 
 
 This is also why we need the GMT `time.Location` on the Client struct, so we don't need to create the location each time this helper function is called. 
+
+#### Validation
+
+In the developer documentation for the `Create` endpoint the payloads need to adhere to certain rules based on which country we're trying to add an account to. For this reason I've created client side validation so we don't even send data that would be rejected by the server.
+
+After having written the individual rules and found that most code is repetitive, I've extracted the main validation functionalities into their own functions where I can pass in parameters to check values against.
+
+Two notable exceptions here: Italy's conditional formatting of the bank ID based on whether the account number is present made it necessary to not extract that specific check into a function, as it's not reusable.
+
+The tests cover all documented eventualities.
