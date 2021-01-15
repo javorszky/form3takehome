@@ -767,6 +767,132 @@ func TestValidateResource(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		// GR
+		{
+			name: "GR is valid when all fields are valid, bic, account number, iban provided",
+			args: args{
+				account: client.Resource{
+					Country:       "GR",
+					BankID:        "1234567",
+					BIC:           bicExample,
+					BankIDCode:    "GRBIC",
+					AccountNumber: "1234567890123456",
+					IBAN:          ibanExample,
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "GR is valid when all fields are valid, bic, account number, iban not provided",
+			args: args{
+				account: client.Resource{
+					Country:    "GR",
+					BankID:     "1234567",
+					BankIDCode: "GRBIC",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "GR is invalid when bank id is missing",
+			args: args{
+				account: client.Resource{
+					Country:    "GR",
+					BankIDCode: "GRBIC",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "GR is invalid when bank id code is missing",
+			args: args{
+				account: client.Resource{
+					Country: "GR",
+					BankID:  "1234567",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "GR is invalid when bank id is fewer than 7 digits",
+			args: args{
+				account: client.Resource{
+					Country:    "GR",
+					BankID:     "123456",
+					BankIDCode: "GRBIC",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "GR is invalid when bank id is more than 7 digits",
+			args: args{
+				account: client.Resource{
+					Country:    "GR",
+					BankID:     "12345678",
+					BankIDCode: "GRBIC",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "GR is invalid when bank id is 7 characters, not all of them digits",
+			args: args{
+				account: client.Resource{
+					Country:    "GR",
+					BankID:     "123456a",
+					BankIDCode: "GRBIC",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "GR is invalid when bank id code is not correct value",
+			args: args{
+				account: client.Resource{
+					Country:    "GR",
+					BankID:     "1234567",
+					BankIDCode: "NO",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "GR is invalid when account number is provided, but fewer than 16 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "GR",
+					BankID:        "1234567",
+					BankIDCode:    "GRBIC",
+					AccountNumber: "123456789012345",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "GR is invalid when account number is provided, but more than 16 digits",
+			args: args{
+				account: client.Resource{
+					Country:       "GR",
+					BankID:        "1234567",
+					BankIDCode:    "GRBIC",
+					AccountNumber: "12345678901234567",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "GR is invalid when account number is provided, is 16 characters, not all digits",
+			args: args{
+				account: client.Resource{
+					Country:       "GR",
+					BankID:        "1234567",
+					BankIDCode:    "GRBIC",
+					AccountNumber: "123456789012345a",
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
