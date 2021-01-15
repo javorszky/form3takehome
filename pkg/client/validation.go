@@ -9,9 +9,11 @@ import (
 
 var (
 	reThreeDigits     = regexp.MustCompile(`^\d{3}$`)
+	reFiveDigits      = regexp.MustCompile(`^\d{5}$`)
 	reSixDigits       = regexp.MustCompile(`^\d{6}$`)
 	reSevenDigits     = regexp.MustCompile(`^\d{7}$`)
 	reEightDigits     = regexp.MustCompile(`^\d{8}$`)
+	reNineDigits      = regexp.MustCompile(`^\d{9}$`)
 	reTenDigits       = regexp.MustCompile(`^\d{10}$`)
 	reElevenDigits    = regexp.MustCompile(`^\d{11}$`)
 	reTwelveDigits    = regexp.MustCompile(`^\d{12}$`)
@@ -21,6 +23,7 @@ var (
 	reCARoutingNumber = regexp.MustCompile(`^0\d{8}$`)
 	reCAAccountNumber = regexp.MustCompile(`^\d{7,12}$`)
 	reHKAccountNumber = regexp.MustCompile(`^\d{9,12}$`)
+	reUSAccountNumber = regexp.MustCompile(`^\d{6,17}$`)
 )
 
 //nolint:gocyclo
@@ -47,11 +50,17 @@ func ValidateResource(account Resource) error {
 	case "LU":
 		return validateLU(account)
 	case "NL":
+		return validateNL(account)
 	case "PL":
+		return validatePL(account)
 	case "PT":
+		return validatePT(account)
 	case "ES":
+		return validateES(account)
 	case "CH":
+		return validateCH(account)
 	case "US":
+		return validateUS(account)
 	}
 
 	return nil
@@ -356,6 +365,165 @@ func validateLU(account Resource) error {
 	// Account number optional, 13 characters, generated if not provided.
 	if account.AccountNumber != "" && !reThirteenDigits.MatchString(account.AccountNumber) {
 		errs = append(errs, fmt.Sprintf("account number was provided, but not 13 numbers: '%s'", account.AccountNumber))
+	}
+
+	if len(errs) == 0 {
+		return nil
+	}
+
+	return errors.New(strings.Join(errs, ", "))
+}
+
+func validateNL(account Resource) error {
+	errs := make([]string, 0)
+	// not supported, has to be empty
+	if account.BankID != "" {
+		errs = append(errs, fmt.Sprintf("NL Bank id is not supported, has to be empty. Got '%s'", account.BankID))
+	}
+
+	// BIC required
+	if account.BIC == "" {
+		errs = append(errs, "BIC is required, got empty")
+	}
+
+	// Bank ID code not supported, has to be empty
+	if account.BankIDCode != "" {
+		errs = append(errs, fmt.Sprintf("Bank ID Code is not supported, has to be empty. Got '%s'", account.BankIDCode))
+	}
+
+	// Account number optional, 8 characters, generated if not provided
+	if account.AccountNumber != "" && !reTenDigits.MatchString(account.AccountNumber) {
+		errs = append(errs, fmt.Sprintf("account number was provided, but not 10 numbers: '%s'", account.AccountNumber))
+	}
+
+	if len(errs) == 0 {
+		return nil
+	}
+
+	return errors.New(strings.Join(errs, ", "))
+}
+
+func validatePL(account Resource) error {
+	errs := make([]string, 0)
+	// required, 8 characters, national bank code + branch code + national check digit
+	if !reEightDigits.MatchString(account.BankID) {
+		errs = append(errs, fmt.Sprintf("PL bank id is not correct format: '%s'", account.BankID))
+	}
+
+	// Bank ID code is required, has to be PLKNR
+	if account.BankIDCode != "PLKNR" {
+		errs = append(errs, fmt.Sprintf("Bank ID Code is not PLKNR, got '%s'", account.BankIDCode))
+	}
+
+	// Account number optional, 16 characters, generated if not provided
+	if account.AccountNumber != "" && !reSixteenDigits.MatchString(account.AccountNumber) {
+		errs = append(errs, fmt.Sprintf("account number was provided, but not 16 numbers: '%s'", account.AccountNumber))
+	}
+
+	if len(errs) == 0 {
+		return nil
+	}
+
+	return errors.New(strings.Join(errs, ", "))
+}
+
+func validatePT(account Resource) error {
+	errs := make([]string, 0)
+	// required, 8 characters, bank identifier + PSP reference number
+	if !reEightDigits.MatchString(account.BankID) {
+		errs = append(errs, fmt.Sprintf("PT bank id is not correct format: '%s'", account.BankID))
+	}
+
+	// Bank ID code is required, has to be PTNCC
+	if account.BankIDCode != "PTNCC" {
+		errs = append(errs, fmt.Sprintf("Bank ID Code is not PTNCC, got '%s'", account.BankIDCode))
+	}
+
+	// Account number optional, 11 characters, generated if not provided
+	if account.AccountNumber != "" && !reElevenDigits.MatchString(account.AccountNumber) {
+		errs = append(errs, fmt.Sprintf("account number was provided, but not 11 numbers: '%s'", account.AccountNumber))
+	}
+
+	if len(errs) == 0 {
+		return nil
+	}
+
+	return errors.New(strings.Join(errs, ", "))
+}
+
+func validateES(account Resource) error {
+	errs := make([]string, 0)
+	// required, 8 characters, Código de entidad + Código de oficina
+	if !reEightDigits.MatchString(account.BankID) {
+		errs = append(errs, fmt.Sprintf("ES bank id is not correct format: '%s'", account.BankID))
+	}
+
+	// Bank ID code is required, has to be ESNCC
+	if account.BankIDCode != "ESNCC" {
+		errs = append(errs, fmt.Sprintf("Bank ID Code is not ESNCC, got '%s'", account.BankIDCode))
+	}
+
+	// Account number optional, 10 characters, generated if not provided
+	if account.AccountNumber != "" && !reTenDigits.MatchString(account.AccountNumber) {
+		errs = append(errs, fmt.Sprintf("account number was provided, but not 10 numbers: '%s'", account.AccountNumber))
+	}
+
+	if len(errs) == 0 {
+		return nil
+	}
+
+	return errors.New(strings.Join(errs, ", "))
+}
+
+func validateCH(account Resource) error {
+	errs := make([]string, 0)
+	// required, 5 characters
+	if !reFiveDigits.MatchString(account.BankID) {
+		errs = append(errs, fmt.Sprintf("CH bank id is not correct format: '%s'", account.BankID))
+	}
+
+	// Bank ID code is required, has to be CHBCC
+	if account.BankIDCode != "CHBCC" {
+		errs = append(errs, fmt.Sprintf("Bank ID Code is not CHBCC, got '%s'", account.BankIDCode))
+	}
+
+	// Account number optional, 12 characters, generated if not provided
+	if account.AccountNumber != "" && !reTwelveDigits.MatchString(account.AccountNumber) {
+		errs = append(errs, fmt.Sprintf("account number was provided, but not 12 numbers: '%s'", account.AccountNumber))
+	}
+
+	if len(errs) == 0 {
+		return nil
+	}
+
+	return errors.New(strings.Join(errs, ", "))
+}
+
+func validateUS(account Resource) error {
+	errs := make([]string, 0)
+	// required, 9 characters, ABA routing number
+	if !reNineDigits.MatchString(account.BankID) {
+		errs = append(errs, fmt.Sprintf("US bank id is not correct format: '%s'", account.BankID))
+	}
+
+	// BIC required
+	if account.BIC == "" {
+		errs = append(errs, "BIC is required, got empty")
+	}
+
+	// Bank ID code is required, has to be USABA
+	if account.BankIDCode != "USABA" {
+		errs = append(errs, fmt.Sprintf("Bank ID Code is not USABA, got '%s'", account.BankIDCode))
+	}
+
+	// Account number optional, 6-17 characters, generated if not provided
+	if account.AccountNumber != "" && !reUSAccountNumber.MatchString(account.AccountNumber) {
+		errs = append(errs, fmt.Sprintf("account number was provided, but not 6-17 numbers: '%s'", account.AccountNumber))
+	}
+
+	// IBAN: not supported, has to be empty
+	if account.IBAN != "" {
+		errs = append(errs, fmt.Sprintf("IBAN is not supported, has to be empty. Got '%s'", account.IBAN))
 	}
 
 	if len(errs) == 0 {
