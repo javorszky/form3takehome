@@ -78,7 +78,7 @@ In the developer documentation for the `Create` endpoint the payloads need to ad
 
 After having written the individual rules and found that most code is repetitive, I've extracted the main validation functionalities into their own functions where I can pass in parameters to check values against.
 
-Two notable exceptions here: Italy's conditional formatting of the bank ID based on whether the account number is present made it necessary to not extract that specific check into a function, as it's not reusable.
+One notable exceptions here: Italy's conditional formatting of the bank ID based on whether the account number is present made it necessary to not extract that specific check into a function, as it's not reusable.
 
 The tests cover all documented eventualities.
 
