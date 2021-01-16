@@ -19,18 +19,23 @@ import (
 const (
 	acceptHeaderValue = "application/vnd.api+json"
 	createEndpoint    = "/v1/organisation/accounts"
+	typeAccounts      = "accounts"
 )
 
 type Client struct {
-	BaseURL      string
-	DateLocation *time.Location
+	BaseURL        string
+	OrganisationID string
+	HttpClient     http.Client
+	DateLocation   *time.Location
 }
 
 // New returns a configured Client struct.
-func New(cfg config.Config, gmt *time.Location) Client {
+func New(cfg config.Config, c http.Client, gmt *time.Location) Client {
 	return Client{
-		BaseURL:      cfg.AccountsAPIURL,
-		DateLocation: gmt,
+		BaseURL:        cfg.AccountsAPIURL,
+		OrganisationID: cfg.OrganisationID,
+		HttpClient:     c,
+		DateLocation:   gmt,
 	}
 }
 
@@ -40,17 +45,18 @@ func (c Client) Create(account Resource) (Resource, error) {
 		return Resource{}, fmt.Errorf("client.Create new uuid: %w", err)
 	}
 
+	err = ValidateResource(account)
+	if err != nil {
+		return Resource{}, fmt.Errorf("client.Create: %w", err)
+	}
+
 	payload := Payload{
 		Data: Data{
 			ID:             id.String(),
-			OrganisationID: "",
-			Type:           "",
-			Version:        0,
-			CreatedOn:      time.Time{},
-			ModifiedOn:     time.Time{},
-			Attributes:     Resource{},
+			OrganisationID: c.OrganisationID,
+			Type:           typeAccounts,
+			Attributes:     account,
 		},
-		Links: Links{},
 	}
 
 	jsonPayload, err := marshalPayload(payload)
@@ -58,12 +64,33 @@ func (c Client) Create(account Resource) (Resource, error) {
 		return Resource{}, fmt.Errorf("client.Create: %w", err)
 	}
 
-	_, err = http.NewRequestWithContext(context.TODO(), http.MethodPost, createEndpoint, jsonPayload)
+	req, err := http.NewRequestWithContext(
+		context.TODO(),
+		http.MethodPost,
+		fmt.Sprintf("%s%s", c.BaseURL, createEndpoint),
+		jsonPayload,
+	)
 	if err != nil {
 		return Resource{}, fmt.Errorf("client.Create: newRequestWithContext: %w", err)
 	}
 
-	return payload.Data.Attributes, nil
+	req = c.addHeaders(req)
+
+	resp, err := c.HttpClient.Do(req)
+	if err != nil {
+		return Resource{}, fmt.Errorf("client.Create c.HttpClient.Do: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusCreated {
+		return Resource{}, fmt.Errorf("client.Create response unexpected response code: %d", resp.StatusCode)
+	}
+
+	p, err := unmarshalPayload(resp.Body)
+	if err != nil {
+		return Resource{}, fmt.Errorf("client.Create: %w", err)
+	}
+
+	return p.Data.Attributes, nil
 }
 
 func (c Client) List() {
@@ -101,6 +128,7 @@ func (c Client) currentHTTPDate() string {
 	return time.Now().In(c.DateLocation).Format(time.RFC1123)
 }
 
+// marshalPayload will turn a Payload struct to its json representation.
 func marshalPayload(r Payload) (io.Reader, error) {
 	b := new(bytes.Buffer)
 
@@ -110,4 +138,16 @@ func marshalPayload(r Payload) (io.Reader, error) {
 	}
 
 	return b, nil
+}
+
+// unmarshalPayload will turn a json in an io.Reader into a Payload struct.
+func unmarshalPayload(r io.Reader) (Payload, error) {
+	var p Payload
+
+	err := json.NewDecoder(r).Decode(&p)
+	if err != nil {
+		return Payload{}, fmt.Errorf("unmarshalPayload: %w", err)
+	}
+
+	return p, nil
 }

@@ -1,6 +1,7 @@
 package client_test
 
 import (
+	"net/http"
 	"testing"
 	"time"
 
@@ -14,6 +15,10 @@ func TestNew(t *testing.T) {
 	gmtLoc, err := time.LoadLocation("GMT")
 	if err != nil {
 		t.Fatalf("could not load GMT location")
+	}
+
+	testClient := http.Client{
+		Timeout: 30 * time.Second,
 	}
 
 	type args struct {
@@ -42,7 +47,7 @@ func TestNew(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, client.New(tt.args.cfg, tt.args.gmt))
+			assert.Equal(t, tt.want, client.New(tt.args.cfg, testClient, tt.args.gmt))
 		})
 	}
 }
