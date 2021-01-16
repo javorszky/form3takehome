@@ -133,6 +133,38 @@ func (c Client) List(pageNumber, pageSize uint) ([]Resource, error) {
 	return resources, nil
 }
 
+func (c Client) Fetch(accountID string) (Resource, error) {
+	requestPath := fmt.Sprintf(fetchEndpoint, accountID)
+
+	req, err := http.NewRequestWithContext(
+		context.TODO(),
+		http.MethodGet,
+		fmt.Sprintf("%s%s", c.BaseURL, requestPath),
+		nil,
+	)
+	if err != nil {
+		return Resource{}, fmt.Errorf("client.Fetch http.NewRequestWithContext: %w", err)
+	}
+
+	req = c.addHeaders(req)
+
+	resp, err := c.HttpClient.Do(req)
+	if err != nil {
+		return Resource{}, fmt.Errorf("client.Fetch httpClient.Do: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return Resource{}, fmt.Errorf("client.Fetch unexpected response code: %d", resp.StatusCode)
+	}
+
+	p, err := unmarshalPayload(resp.Body)
+	if err != nil {
+		return Resource{}, fmt.Errorf("client.Fetch: %w", err)
+	}
+
+	return p.Data.Attributes, nil
+}
+
 // addHeaders will decorate a header with the needed key/value pairs. If the body is not empty, it also adds the
 // Content-Type header.
 //
