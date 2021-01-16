@@ -19,6 +19,9 @@ import (
 const (
 	acceptHeaderValue = "application/vnd.api+json"
 	createEndpoint    = "/v1/organisation/accounts"
+	listEndpoint      = "/v1/organisation/accounts?page[number]=%d&page[size]=%d"
+	fetchEndpoint     = "/v1/organisation/accounts/%s"
+	deleteEndpoint    = "/v1/organisation/accounts/{account.id}?version={version}"
 	typeAccounts      = "accounts"
 )
 
@@ -93,7 +96,41 @@ func (c Client) Create(account Resource) (Resource, error) {
 	return p.Data.Attributes, nil
 }
 
-func (c Client) List() {
+func (c Client) List(pageNumber, pageSize uint) ([]Resource, error) {
+	requestPath := fmt.Sprintf(listEndpoint, pageNumber, pageSize)
+
+	req, err := http.NewRequestWithContext(
+		context.TODO(),
+		http.MethodGet,
+		fmt.Sprintf("%s%s", c.BaseURL, requestPath),
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("client.List http.NewRequestWithContext: %w", err)
+	}
+
+	req = c.addHeaders(req)
+
+	resp, err := c.HttpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("client.List httpClient.Do: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("client.List unexpected http response status: %d", resp.StatusCode)
+	}
+
+	mp, err := unmarshalMultiPayload(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("client.List: %w", err)
+	}
+
+	resources := make([]Resource, 0)
+	for _, d := range mp.Data {
+		resources = append(resources, d.Attributes)
+	}
+
+	return resources, nil
 }
 
 // addHeaders will decorate a header with the needed key/value pairs. If the body is not empty, it also adds the
@@ -150,4 +187,16 @@ func unmarshalPayload(r io.Reader) (Payload, error) {
 	}
 
 	return p, nil
+}
+
+// unmarshalMultiPayload will turn a json with an array of payloads in the data part into a MultiPayload struct.
+func unmarshalMultiPayload(r io.Reader) (MultiPayload, error) {
+	var mp MultiPayload
+
+	err := json.NewDecoder(r).Decode(&mp)
+	if err != nil {
+		return MultiPayload{}, fmt.Errorf("unmarshalMultiPayload: %w", err)
+	}
+
+	return mp, nil
 }

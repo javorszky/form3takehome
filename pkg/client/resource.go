@@ -2,6 +2,7 @@ package client
 
 import "time"
 
+// Resource in this case encodes the Organisation.Account resource as the API only deals with this.
 type Resource struct {
 	Country                 string    `json:"country"`
 	BaseCurrency            string    `json:"base_currency,omitempty"`
@@ -21,6 +22,7 @@ type Resource struct {
 	Status                  string    `json:"status"`
 }
 
+// Data struct encodes the the data part of a create request, and data part of the responses.
 type Data struct {
 	ID             string    `json:"id"`
 	OrganisationID string    `json:"organisation_id"`
@@ -31,6 +33,7 @@ type Data struct {
 	Attributes     Resource  `json:"attributes"`
 }
 
+// Links is used to encode the links section from the responses.
 type Links struct {
 	Self  string `json:"self"`
 	First string `json:"first,omitempty"`
@@ -38,7 +41,16 @@ type Links struct {
 	Last  string `json:"last,omitempty"`
 }
 
+// Payload struct is used to encode json requests and responses where there are only one of Resource being sent or
+// received, such as the Organisation.Accounts.Fetch and Organisation.Accounts.Create endpoints.
 type Payload struct {
 	Data  Data  `json:"data"`
-	Links Links `json:"links"`
+	Links Links `json:"links,omitempty"`
+}
+
+// MultiPayload struct is used to encode json requests and responses where they contain an array of data objects, such
+// as the Organisation.Accounts.List API endpoint.
+type MultiPayload struct {
+	Data  []Data `json:"data"`
+	Links Links  `json:"links"`
 }
