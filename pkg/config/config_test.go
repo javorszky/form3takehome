@@ -20,9 +20,11 @@ func TestGet(t *testing.T) {
 			name: "correctly returns config struct based on existing non empty env var",
 			setup: func() {
 				_ = os.Setenv(config.AccountsAPIURLKey, "anurl")
+				_ = os.Setenv(config.OrganisationIDKey, "an-uuidv4")
 			},
 			want: config.Config{
 				AccountsAPIURL: "anurl",
+				OrganisationID: "an-uuidv4",
 			},
 			wantErr: false,
 		},
@@ -30,12 +32,13 @@ func TestGet(t *testing.T) {
 			name: "correctly returns error and empty config on existing but empty environment variable",
 			setup: func() {
 				_ = os.Setenv(config.AccountsAPIURLKey, "")
+				_ = os.Setenv(config.OrganisationIDKey, "")
 			},
 			want:    config.Config{},
 			wantErr: true,
 		},
 		{
-			name: "correctly returns error and empty config on non-existing environment variable",
+			name: "correctly returns error and empty config on non-existing environment variables",
 			setup: func() {
 				// Do not set an environment variable.
 			},

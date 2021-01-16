@@ -7,22 +7,38 @@ import (
 
 const (
 	AccountsAPIURLKey = "ACCOUNTS_ADDRESS"
+	OrganisationIDKey = "ORGANISATION_ID"
 )
 
 type Config struct {
 	AccountsAPIURL string
+	OrganisationID string
 }
+
+type validationFunc func(string) error
 
 func Get() (Config, error) {
-	if notEmpty(os.Getenv(AccountsAPIURLKey)) {
-		return Config{
-			AccountsAPIURL: os.Getenv(AccountsAPIURLKey),
-		}, nil
+	for key, f := range map[string]validationFunc{
+		AccountsAPIURLKey: stringNotEmpty,
+		OrganisationIDKey: stringNotEmpty,
+	} {
+		err := f(key)
+		if err != nil {
+			return Config{}, fmt.Errorf("config.Get: %s failed validation: %w", key, err)
+		}
 	}
 
-	return Config{}, fmt.Errorf("config.Get: required setting of %s is empty", AccountsAPIURLKey)
+	return Config{
+		AccountsAPIURL: os.Getenv(AccountsAPIURLKey),
+		OrganisationID: os.Getenv(OrganisationIDKey),
+	}, nil
 }
 
-func notEmpty(setting string) bool {
-	return setting != ""
+func stringNotEmpty(key string) error {
+	setting := os.Getenv(key)
+	if setting == "" {
+		return fmt.Errorf("setting with key '%s' is empty", setting)
+	}
+
+	return nil
 }
