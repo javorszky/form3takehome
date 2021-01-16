@@ -21,7 +21,7 @@ const (
 	createEndpoint    = "/v1/organisation/accounts"
 	listEndpoint      = "/v1/organisation/accounts?page[number]=%d&page[size]=%d"
 	fetchEndpoint     = "/v1/organisation/accounts/%s"
-	deleteEndpoint    = "/v1/organisation/accounts/{account.id}?version={version}"
+	deleteEndpoint    = "/v1/organisation/accounts/%s?version=%d"
 	typeAccounts      = "accounts"
 )
 
@@ -163,6 +163,33 @@ func (c Client) Fetch(accountID string) (Resource, error) {
 	}
 
 	return p.Data.Attributes, nil
+}
+
+func (c Client) Delete(accountID string, version uint) error {
+	requestPath := fmt.Sprintf(deleteEndpoint, accountID, version)
+
+	req, err := http.NewRequestWithContext(
+		context.Background(),
+		http.MethodDelete,
+		fmt.Sprintf("%s%s", c.BaseURL, requestPath),
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("client.Delete http.NewRequestWithContext: %w", err)
+	}
+
+	req = c.addHeaders(req)
+
+	resp, err := c.HttpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("client.Delete httpClient.Do: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("client.Delete unexpected response code: %d", resp.StatusCode)
+	}
+
+	return nil
 }
 
 // addHeaders will decorate a header with the needed key/value pairs. If the body is not empty, it also adds the
