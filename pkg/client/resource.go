@@ -4,20 +4,20 @@ import "time"
 
 type Resource struct {
 	Country                 string    `json:"country"`
-	BaseCurrency            string    `json:"base_currency"`
-	BankID                  string    `json:"bank_id"`
-	BankIDCode              string    `json:"bank_id_code"`
-	AccountNumber           string    `json:"account_number"`
-	BIC                     string    `json:"bic"`
-	IBAN                    string    `json:"iban"`
-	CustomerID              string    `json:"customer_id"`
+	BaseCurrency            string    `json:"base_currency,omitempty"`
+	BankID                  string    `json:"bank_id,omitempty"`
+	BankIDCode              string    `json:"bank_id_code,omitempty"`
+	AccountNumber           string    `json:"account_number,omitempty"`
+	BIC                     string    `json:"bic,omitempty"`
+	IBAN                    string    `json:"iban,omitempty"`
+	CustomerID              string    `json:"customer_id,omitempty"`
 	Name                    [4]string `json:"name"`
-	AlternativeNames        [3]string `json:"alternative_names"`
-	AccountClassification   string    `json:"account_classification"`
-	JointAccount            bool      `json:"joint_account"`
-	AccountMatchingOptOut   bool      `json:"account_matching_opt_out"`
-	SecondaryIdentification string    `json:"secondary_identification"`
-	Switched                bool      `json:"switched"`
+	AlternativeNames        [3]string `json:"alternative_names,omitempty"`
+	AccountClassification   string    `json:"account_classification,omitempty"`
+	JointAccount            bool      `json:"joint_account,omitempty"`
+	AccountMatchingOptOut   bool      `json:"account_matching_opt_out,omitempty"`
+	SecondaryIdentification string    `json:"secondary_identification,omitempty"`
+	Switched                bool      `json:"switched,omitempty"`
 	Status                  string    `json:"status"`
 }
 

@@ -1,15 +1,21 @@
 package client
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/javorszky/form3takehome/pkg/config"
 )
 
-const acceptHeaderValue = "application/vnd.api+json"
+const (
+	acceptHeaderValue = "application/vnd.api+json"
+	createEndpoint    = "/v1/organisation/accounts"
+)
 
 type Client struct {
 	BaseURL      string
@@ -25,6 +31,22 @@ func New(cfg config.Config, gmt *time.Location) Client {
 }
 
 func (c Client) Create(account Resource) (Resource, error) {
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return Resource{}, fmt.Errorf("client.Create new uuid: %w", err)
+	}
+	payload := Payload{
+		Data: Data{
+			ID:             id.String(),
+			OrganisationID: "",
+			Type:           "",
+			Version:        0,
+			CreatedOn:      time.Time{},
+			ModifiedOn:     time.Time{},
+			Attributes:     Resource{},
+		},
+		Links: Links{},
+	}
 	return Resource{}, nil
 }
 
