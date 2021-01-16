@@ -1,7 +1,11 @@
 package client
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -35,6 +39,7 @@ func (c Client) Create(account Resource) (Resource, error) {
 	if err != nil {
 		return Resource{}, fmt.Errorf("client.Create new uuid: %w", err)
 	}
+
 	payload := Payload{
 		Data: Data{
 			ID:             id.String(),
@@ -47,7 +52,18 @@ func (c Client) Create(account Resource) (Resource, error) {
 		},
 		Links: Links{},
 	}
-	return Resource{}, nil
+
+	jsonPayload, err := marshalPayload(payload)
+	if err != nil {
+		return Resource{}, fmt.Errorf("client.Create: %w", err)
+	}
+
+	_, err = http.NewRequestWithContext(context.TODO(), http.MethodPost, createEndpoint, jsonPayload)
+	if err != nil {
+		return Resource{}, fmt.Errorf("client.Create: newRequestWithContext: %w", err)
+	}
+
+	return payload.Data.Attributes, nil
 }
 
 func (c Client) List() {
@@ -83,4 +99,15 @@ func (c Client) addHeaders(r *http.Request) *http.Request {
 // currentHTTPDate returns the current date time in GMT, per RFC 7231/7.1.1.1.
 func (c Client) currentHTTPDate() string {
 	return time.Now().In(c.DateLocation).Format(time.RFC1123)
+}
+
+func marshalPayload(r Payload) (io.Reader, error) {
+	b := new(bytes.Buffer)
+
+	err := json.NewEncoder(b).Encode(r)
+	if err != nil {
+		return nil, fmt.Errorf("marshalPayload: %w", err)
+	}
+
+	return b, nil
 }

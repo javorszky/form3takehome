@@ -81,3 +81,9 @@ After having written the individual rules and found that most code is repetitive
 Two notable exceptions here: Italy's conditional formatting of the bank ID based on whether the account number is present made it necessary to not extract that specific check into a function, as it's not reusable.
 
 The tests cover all documented eventualities.
+
+#### Create
+
+I've made use of `google/uuid` package, because no one should generate uuids by hand. It's possible, but there's no real reason for it. That's needed to generate an ID for a resource that we're creating.
+
+The organisation ID also needs to be an uuidV4, which I will assume comes with the account being used if I were to use an authentication scheme. I have added an example uuidV4 to the environment variables so the config could pick it up and use it throughout the project.

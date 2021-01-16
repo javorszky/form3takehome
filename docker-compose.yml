@@ -34,6 +34,10 @@ services:
       - POSTGRES_PASSWORD=password
     volumes:
       - ./scripts/db:/docker-entrypoint-initdb.d/
+  client:
+    environment:
+      - ORGANISATION_ID=cc04df5e-40a9-45e3-89e3-17e6f2dff511
+      - ACCOUNTS_ADDRESS=http://localhost:8080
 
   vault:
     image: vault:0.9.3
