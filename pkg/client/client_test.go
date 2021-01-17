@@ -36,12 +36,15 @@ func TestNew(t *testing.T) {
 			args: args{
 				cfg: config.Config{
 					AccountsAPIURL: "https://testurl",
+					OrganisationID: "orgid",
 				},
 				gmt: gmtLoc,
 			},
 			want: client.Client{
-				BaseURL:      "https://testurl",
-				DateLocation: gmtLoc,
+				BaseURL:        "https://testurl",
+				OrganisationID: "orgid",
+				DateLocation:   gmtLoc,
+				HttpClient:     testClient,
 			},
 		},
 	}
