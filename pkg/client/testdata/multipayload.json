@@ -1,0 +1,80 @@
+{
+  "data": [
+    {
+    "id":"a6c1a721-bb1b-41ef-bd11-800a1309ff9b",
+    "organisation_id": "7442ea6b-164a-4818-b470-d98abfbc24ae",
+    "type": "accounts",
+    "version": 0,
+    "created_on":"2020-05-06T09:28:13.843Z",
+    "modified_on": "2020-05-06T09:28:13.843Z",
+    "attributes": {
+      "country": "GB",
+      "base_currency": "GBP",
+      "bank_id": "89282dd",
+      "bank_id_code": "12221",
+      "account_number": "12345678",
+      "bic": "bic1234",
+      "iban": "iban1234",
+      "customer_id": "anuuidv4again",
+      "name": [
+        "line1",
+        "line2",
+        "line3",
+        "line4"
+      ],
+      "alternative_names": [
+        "altname1",
+        "altname2",
+        "altname3"
+      ],
+      "account_classification": "cop",
+      "joint_account": false,
+      "account_matching_opt_out": false,
+      "secondary_identification": "some custom name",
+      "switched": false,
+      "status": "confirmed"
+    }
+  },
+    {
+      "id":"ffa7706b-d8fc-40b2-be6b-67d2a628cadf",
+      "organisation_id": "7442ea6b-164a-4818-b470-d98abfbc24ae",
+      "type": "accounts",
+      "version": 0,
+      "created_on":"2020-08-06T09:28:13.843Z",
+      "modified_on": "2020-08-06T09:28:13.843Z",
+      "attributes": {
+        "country": "GB",
+        "base_currency": "GBP",
+        "bank_id": "89282dd",
+        "bank_id_code": "999999",
+        "account_number": "87654321",
+        "bic": "bic5678",
+        "iban": "iban5678",
+        "customer_id": "anuuidv4again",
+        "name": [
+          "line1-2",
+          "line2-2",
+          "line3-2",
+          "line4-2"
+        ],
+        "alternative_names": [
+          "altname1-2",
+          "altname2-2",
+          "altname3-2"
+        ],
+        "account_classification": "cop",
+        "joint_account": true,
+        "account_matching_opt_out": true,
+        "secondary_identification": "another custom name",
+        "switched": true,
+        "status": "confirmed"
+      }
+    }
+  ],
+  "links": {
+    "self": "https://selflink.com/resource",
+    "next": "https://nextlink.com/resource",
+    "first": "https://firstlink.com/resource",
+    "last": "https://lastlink.com/resource"
+  }
+}
