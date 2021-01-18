@@ -15,10 +15,10 @@ type Resource struct {
 	Name                    [4]string `json:"name"`
 	AlternativeNames        [3]string `json:"alternative_names,omitempty"`
 	AccountClassification   string    `json:"account_classification,omitempty"`
-	JointAccount            bool      `json:"joint_account,omitempty"`
-	AccountMatchingOptOut   bool      `json:"account_matching_opt_out,omitempty"`
+	JointAccount            bool      `json:"joint_account"`
+	AccountMatchingOptOut   bool      `json:"account_matching_opt_out"`
 	SecondaryIdentification string    `json:"secondary_identification,omitempty"`
-	Switched                bool      `json:"switched,omitempty"`
+	Switched                bool      `json:"switched"`
 	Status                  string    `json:"status"`
 }
 

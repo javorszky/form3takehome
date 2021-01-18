@@ -36,8 +36,8 @@
   },
   "links": {
     "self": "https://selflink.com/resource",
-    "next": "https://nextlink.com/resource",
     "first": "https://firstlink.com/resource",
+    "next": "https://nextlink.com/resource",
     "last": "https://lastlink.com/resource"
   }
 }

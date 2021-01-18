@@ -1,8 +1,11 @@
 package client
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -345,6 +348,111 @@ func Test_unmarshalMultiPayload(t *testing.T) {
 			}
 
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_marshalPayload(t *testing.T) {
+	testTime, err := time.Parse(time.RFC3339, "2020-05-06T09:28:13.843Z")
+	if err != nil {
+		t.Fatalf("could not parse test time: %s", err)
+	}
+
+	f, err := os.Open("./testdata/payload.json")
+	if err != nil {
+		t.Fatalf("could not open file: %s", err)
+	}
+
+	jsonPayload, err := ioutil.ReadAll(f)
+	if err != nil {
+		t.Fatalf("could not read file: %s", err)
+	}
+
+	var b bytes.Buffer
+
+	err = json.Compact(&b, jsonPayload)
+	if err != nil {
+		t.Fatalf("could not compact json data: %s", err)
+	}
+
+	type args struct {
+		r Payload
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "marshals payload correctly",
+			args: args{
+				r: Payload{
+					Data: Data{
+						ID:             "a6c1a721-bb1b-41ef-bd11-800a1309ff9b",
+						OrganisationID: "7442ea6b-164a-4818-b470-d98abfbc24ae",
+						Type:           "accounts",
+						Version:        0,
+						CreatedOn:      testTime,
+						ModifiedOn:     testTime,
+						Attributes: Resource{
+							Country:       "GB",
+							BaseCurrency:  "GBP",
+							BankID:        "89282dd",
+							BankIDCode:    "12221",
+							AccountNumber: "12345678",
+							BIC:           "bic1234",
+							IBAN:          "iban1234",
+							CustomerID:    "anuuidv4again",
+							Name: [4]string{
+								"line1",
+								"line2",
+								"line3",
+								"line4",
+							},
+							AlternativeNames: [3]string{
+								"altname1",
+								"altname2",
+								"altname3",
+							},
+							AccountClassification:   "cop",
+							JointAccount:            false,
+							AccountMatchingOptOut:   false,
+							SecondaryIdentification: "some custom name",
+							Switched:                false,
+							Status:                  "confirmed",
+						},
+					},
+					Links: Links{
+						Self:  "https://selflink.com/resource",
+						First: "https://firstlink.com/resource",
+						Next:  "https://nextlink.com/resource",
+						Last:  "https://lastlink.com/resource",
+					},
+				},
+			},
+			want:    b.String() + "\n",
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := marshalPayload(tt.args.r)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			} else {
+				assert.NoError(t, err)
+			}
+
+			gotJson, err := ioutil.ReadAll(got)
+			if err != nil {
+				t.Fatalf("could not read ioutil.Readall: %s", err)
+			}
+
+			assert.Equal(t, tt.want, string(gotJson))
 		})
 	}
 }
