@@ -209,6 +209,14 @@ func Test_unmarshalPayload(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "returns error on not a json",
+			args: args{
+				r: strings.NewReader("notajson"),
+			},
+			want:    Payload{},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -335,6 +343,14 @@ func Test_unmarshalMultiPayload(t *testing.T) {
 					Last:  "https://lastlink.com/resource",
 				},
 			},
+		},
+		{
+			name: "returns error on unintelligible json",
+			args: args{
+				r: strings.NewReader("notajson"),
+			},
+			want:    MultiPayload{},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
