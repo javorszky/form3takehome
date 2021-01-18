@@ -210,7 +210,9 @@ func (c Client) addHeaders(r *http.Request) *http.Request {
 		return r
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	bodyReadCloser, _ := r.GetBody()
+
+	body, err := ioutil.ReadAll(bodyReadCloser)
 	if err == nil && len(body) > 0 {
 		r.Header.Add("Content-Type", acceptHeaderValue)
 		r.Header.Add("Content-Length", strconv.Itoa(len(body)))
