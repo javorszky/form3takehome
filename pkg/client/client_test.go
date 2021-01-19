@@ -662,6 +662,276 @@ func TestClient_DeleteBadURL(t *testing.T) {
 	}
 }
 
+func TestClient_List(t *testing.T) {
+	gmtLoc, err := time.LoadLocation("GMT")
+	if err != nil {
+		t.Fatalf("could not load gmt location: %s", err)
+	}
+
+	type args struct {
+		pageNumber uint
+		pageSize   uint
+	}
+
+	tests := []struct {
+		name        string
+		handlerFunc http.HandlerFunc
+		args        args
+		want        []client.Resource
+		wantErr     bool
+	}{
+		{
+			name: "correctly returns list of resources",
+			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				_, _ = fmt.Fprint(w, returnCompactFile(t, "./testdata/multipayload.json"))
+			},
+			args: args{
+				pageNumber: 1,
+				pageSize:   2,
+			}, // does not matter what these are.
+			want: []client.Resource{
+				{
+					Country:       "GB",
+					BaseCurrency:  "GBP",
+					BankID:        "89282dd",
+					BankIDCode:    "12221",
+					AccountNumber: "12345678",
+					BIC:           "bic1234",
+					IBAN:          "iban1234",
+					CustomerID:    "anuuidv4again",
+					Name: [4]string{
+						"line1",
+						"line2",
+						"line3",
+						"line4",
+					},
+					AlternativeNames: [3]string{
+						"altname1",
+						"altname2",
+						"altname3",
+					},
+					AccountClassification:   "cop",
+					JointAccount:            false,
+					AccountMatchingOptOut:   false,
+					SecondaryIdentification: "some custom name",
+					Switched:                false,
+					Status:                  "confirmed",
+				},
+
+				{
+
+					Country:       "GB",
+					BaseCurrency:  "GBP",
+					BankID:        "89282dd",
+					BankIDCode:    "999999",
+					AccountNumber: "87654321",
+					BIC:           "bic5678",
+					IBAN:          "iban5678",
+					CustomerID:    "anuuidv4again",
+					Name: [4]string{
+						"line1-2",
+						"line2-2",
+						"line3-2",
+						"line4-2",
+					},
+					AlternativeNames: [3]string{
+						"altname1-2",
+						"altname2-2",
+						"altname3-2",
+					},
+					AccountClassification:   "cop",
+					JointAccount:            true,
+					AccountMatchingOptOut:   true,
+					SecondaryIdentification: "another custom name",
+					Switched:                true,
+					Status:                  "confirmed",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "returns error if the response code is not 200",
+			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusNotFound)
+			},
+			args: args{
+				pageNumber: 1,
+				pageSize:   2,
+			}, // does not matter what these are.
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "returns error if the response takes longer than timeout",
+			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
+				time.Sleep((testTimeoutMs + 100) * time.Millisecond)
+				w.WriteHeader(http.StatusOK)
+				_, _ = fmt.Fprint(w, returnCompactFile(t, "./testdata/multipayload.json"))
+			},
+			args: args{
+				pageNumber: 1,
+				pageSize:   2,
+			}, // does not matter what these are.
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "returns error if the response is not a json",
+			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				_, _ = fmt.Fprint(w, "not a json")
+			},
+			args: args{
+				pageNumber: 1,
+				pageSize:   2,
+			}, // does not matter what these are.
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "returns error if the response is json, but can't be unmarshaled into a multipayload (no data key)",
+			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				_, _ = fmt.Fprint(w, `{"error":"not payload"}`)
+			},
+			args: args{
+				pageNumber: 1,
+				pageSize:   2,
+			}, // does not matter what these are.
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "returns error if the response is json, but can't be unmarshaled into a multipayload (data is not array)",
+			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				_, _ = fmt.Fprint(w, `{"data":"not a json array"}`)
+			},
+			args: args{
+				pageNumber: 1,
+				pageSize:   2,
+			}, // does not matter what these are.
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "error when response can't be unmarshaled into multipayload (data is not array of objects)",
+			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				_, _ = fmt.Fprint(w, `{"data":["not an object"]}`)
+			},
+			args: args{
+				pageNumber: 1,
+				pageSize:   2,
+			}, // does not matter what these are.
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "error when response can't be unmarshaled into multipayload (data objects emtpy)",
+			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				_, _ = fmt.Fprint(w, `{"data":[{"randomkey":"notdata"}]}`)
+			},
+			args: args{
+				pageNumber: 1,
+				pageSize:   2,
+			}, // does not matter what these are.
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "error when response can't be unmarshaled into multipayload (data objects missing Attributes)",
+			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				_, _ = fmt.Fprint(w, `{"data":[{"id":"no attributes yet"}]}`)
+			},
+			args: args{
+				pageNumber: 1,
+				pageSize:   2,
+			}, // does not matter what these are.
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ts := httptest.NewServer(tt.handlerFunc)
+			defer ts.Close()
+			c := client.Client{
+				BaseURL:        ts.URL,
+				OrganisationID: "orgid",
+				HttpClient: http.Client{
+					Timeout: testTimeoutMs * time.Millisecond,
+				},
+				DateLocation: gmtLoc,
+			}
+
+			got, err := c.List(tt.args.pageNumber, tt.args.pageSize)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestClient_ListBadURL(t *testing.T) {
+	gmtLoc, err := time.LoadLocation("GMT")
+	if err != nil {
+		t.Fatalf("could not load gmt location: %s", err)
+	}
+
+	type args struct {
+		pageNumber uint
+		pageSize   uint
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		want    []client.Resource
+		wantErr bool
+	}{
+		{
+			name: "error when request can't be constructed due to bad base url",
+			args: args{
+				pageNumber: 1,
+				pageSize:   2,
+			}, // does not matter what these are.
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := client.Client{
+				BaseURL:        "htt@ps://bla",
+				OrganisationID: "orgid",
+				HttpClient: http.Client{
+					Timeout: testTimeoutMs * time.Millisecond,
+				},
+				DateLocation: gmtLoc,
+			}
+
+			got, err := c.List(tt.args.pageNumber, tt.args.pageSize)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func returnCompactFile(t *testing.T, filename string) string {
 	t.Helper()
 

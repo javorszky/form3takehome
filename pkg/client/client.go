@@ -275,5 +275,15 @@ func unmarshalMultiPayload(r io.Reader) (MultiPayload, error) {
 		return MultiPayload{}, fmt.Errorf("unmarshalMultiPayload: %w", err)
 	}
 
+	if mp.Data == nil {
+		return MultiPayload{}, errors.New("unmarshalMultiPayload: there is no Data on the decoded MultiPayload")
+	}
+
+	for _, d := range mp.Data {
+		if d.Attributes == (Resource{}) {
+			return MultiPayload{}, errors.New("unmarshalMultiPayload: Data structs are missing required fields")
+		}
+	}
+
 	return mp, nil
 }
