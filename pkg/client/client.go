@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -42,6 +43,8 @@ func New(cfg config.Config, c http.Client, gmt *time.Location) Client {
 	}
 }
 
+// Create will create a Resource that belongs to organisation ID set on the Client if the Resource passes validation for
+// the given dataset.
 func (c Client) Create(account Resource) (Resource, error) {
 	id, err := uuid.NewRandom()
 	if err != nil {
@@ -96,6 +99,8 @@ func (c Client) Create(account Resource) (Resource, error) {
 	return p.Data.Attributes, nil
 }
 
+// List will list all the Resources that belong to given organisation ID, pageSize per request, and if multi paged, on
+// the given pageNumber.
 func (c Client) List(pageNumber, pageSize uint) ([]Resource, error) {
 	requestPath := fmt.Sprintf(listEndpoint, pageNumber, pageSize)
 
@@ -133,6 +138,7 @@ func (c Client) List(pageNumber, pageSize uint) ([]Resource, error) {
 	return resources, nil
 }
 
+// Fetch will return a Resource struct identified by an ID, if exists.
 func (c Client) Fetch(accountID string) (Resource, error) {
 	requestPath := fmt.Sprintf(fetchEndpoint, accountID)
 
@@ -165,6 +171,8 @@ func (c Client) Fetch(accountID string) (Resource, error) {
 	return p.Data.Attributes, nil
 }
 
+// Delete will remove a Resource with given ID if version that's requested to be deleted and current version of Resource
+// matches.
 func (c Client) Delete(accountID string, version uint) error {
 	requestPath := fmt.Sprintf(deleteEndpoint, accountID, version)
 
@@ -245,6 +253,14 @@ func unmarshalPayload(r io.Reader) (Payload, error) {
 	err := json.NewDecoder(r).Decode(&p)
 	if err != nil {
 		return Payload{}, fmt.Errorf("unmarshalPayload: %w", err)
+	}
+
+	if p.Data == (Data{}) {
+		return Payload{}, errors.New("unmarshalPayload: Data is empty on the decoded Payload")
+	}
+
+	if p.Data.Attributes == (Resource{}) {
+		return Payload{}, errors.New("unmarshalPayload: Data.Attributes is empty on the decoded Payload")
 	}
 
 	return p, nil
