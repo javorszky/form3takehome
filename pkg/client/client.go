@@ -45,18 +45,18 @@ func New(cfg config.Config, c http.Client, gmt *time.Location) Client {
 
 // Create will create a Resource that belongs to organisation ID set on the Client if the Resource passes validation for
 // the given dataset.
-func (c Client) Create(account Resource) (Resource, error) {
+func (c Client) Create(account Resource) (Payload, error) {
 	id, err := uuid.NewRandom()
 	if err != nil {
-		return Resource{}, fmt.Errorf("client.Create new uuid: %w", err)
+		return Payload{}, fmt.Errorf("client.Create new uuid: %w", err)
 	}
 
 	err = ValidateResource(account)
 	if err != nil {
-		return Resource{}, fmt.Errorf("client.Create: %w", err)
+		return Payload{}, fmt.Errorf("client.Create: %w", err)
 	}
 
-	payload := Payload{
+	requestPayload := Payload{
 		Data: Data{
 			ID:             id.String(),
 			OrganisationID: c.OrganisationID,
@@ -65,9 +65,9 @@ func (c Client) Create(account Resource) (Resource, error) {
 		},
 	}
 
-	jsonPayload, err := marshalPayload(payload)
+	jsonPayload, err := marshalPayload(requestPayload)
 	if err != nil {
-		return Resource{}, fmt.Errorf("client.Create: %w", err)
+		return Payload{}, fmt.Errorf("client.Create: %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(
@@ -77,31 +77,31 @@ func (c Client) Create(account Resource) (Resource, error) {
 		jsonPayload,
 	)
 	if err != nil {
-		return Resource{}, fmt.Errorf("client.Create: newRequestWithContext: %w", err)
+		return Payload{}, fmt.Errorf("client.Create: newRequestWithContext: %w", err)
 	}
 
 	req = c.addHeaders(req)
 
 	resp, err := c.HttpClient.Do(req)
 	if err != nil {
-		return Resource{}, fmt.Errorf("client.Create c.HttpClient.Do: %w", err)
+		return Payload{}, fmt.Errorf("client.Create c.HttpClient.Do: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusCreated {
-		return Resource{}, fmt.Errorf("client.Create response unexpected response code: %d", resp.StatusCode)
+		return Payload{}, fmt.Errorf("client.Create response unexpected response code: %d", resp.StatusCode)
 	}
 
 	p, err := unmarshalPayload(resp.Body)
 	if err != nil {
-		return Resource{}, fmt.Errorf("client.Create: %w", err)
+		return Payload{}, fmt.Errorf("client.Create: %w", err)
 	}
 
-	return p.Data.Attributes, nil
+	return p, nil
 }
 
 // List will list all the Resources that belong to given organisation ID, pageSize per request, and if multi paged, on
 // the given pageNumber.
-func (c Client) List(pageNumber, pageSize uint) ([]Resource, error) {
+func (c Client) List(pageNumber, pageSize uint) (MultiPayload, error) {
 	requestPath := fmt.Sprintf(listEndpoint, pageNumber, pageSize)
 
 	req, err := http.NewRequestWithContext(
@@ -111,35 +111,30 @@ func (c Client) List(pageNumber, pageSize uint) ([]Resource, error) {
 		nil,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("client.List http.NewRequestWithContext: %w", err)
+		return MultiPayload{}, fmt.Errorf("client.List http.NewRequestWithContext: %w", err)
 	}
 
 	req = c.addHeaders(req)
 
 	resp, err := c.HttpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("client.List httpClient.Do: %w", err)
+		return MultiPayload{}, fmt.Errorf("client.List httpClient.Do: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("client.List unexpected http response status: %d", resp.StatusCode)
+		return MultiPayload{}, fmt.Errorf("client.List unexpected http response status: %d", resp.StatusCode)
 	}
 
 	mp, err := unmarshalMultiPayload(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("client.List: %w", err)
+		return MultiPayload{}, fmt.Errorf("client.List: %w", err)
 	}
 
-	resources := make([]Resource, 0)
-	for _, d := range mp.Data {
-		resources = append(resources, d.Attributes)
-	}
-
-	return resources, nil
+	return mp, nil
 }
 
 // Fetch will return a Resource struct identified by an ID, if exists.
-func (c Client) Fetch(accountID string) (Resource, error) {
+func (c Client) Fetch(accountID string) (Payload, error) {
 	requestPath := fmt.Sprintf(fetchEndpoint, accountID)
 
 	req, err := http.NewRequestWithContext(
@@ -149,26 +144,26 @@ func (c Client) Fetch(accountID string) (Resource, error) {
 		nil,
 	)
 	if err != nil {
-		return Resource{}, fmt.Errorf("client.Fetch http.NewRequestWithContext: %w", err)
+		return Payload{}, fmt.Errorf("client.Fetch http.NewRequestWithContext: %w", err)
 	}
 
 	req = c.addHeaders(req)
 
 	resp, err := c.HttpClient.Do(req)
 	if err != nil {
-		return Resource{}, fmt.Errorf("client.Fetch httpClient.Do: %w", err)
+		return Payload{}, fmt.Errorf("client.Fetch httpClient.Do: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return Resource{}, fmt.Errorf("client.Fetch unexpected response code: %d", resp.StatusCode)
+		return Payload{}, fmt.Errorf("client.Fetch unexpected response code: %d", resp.StatusCode)
 	}
 
 	p, err := unmarshalPayload(resp.Body)
 	if err != nil {
-		return Resource{}, fmt.Errorf("client.Fetch: %w", err)
+		return Payload{}, fmt.Errorf("client.Fetch: %w", err)
 	}
 
-	return p.Data.Attributes, nil
+	return p, nil
 }
 
 // Delete will remove a Resource with given ID if version that's requested to be deleted and current version of Resource

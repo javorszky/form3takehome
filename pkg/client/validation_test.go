@@ -9,11 +9,6 @@ import (
 )
 
 func TestValidateResource(t *testing.T) {
-	const (
-		bicExample  = "BARCGB22XXX"            // from https://www.iban.com/search-bic
-		ibanExample = "GB33BUKB20201555555555" // from https://www.iban.com/structure
-	)
-
 	type args struct {
 		account client.Resource
 	}

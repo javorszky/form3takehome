@@ -69,6 +69,11 @@ func TestClient_Create(t *testing.T) {
 		t.Fatalf("could not load gmt location: %s", err)
 	}
 
+	testTime, err := time.Parse(time.RFC3339, "2020-05-06T09:28:13.843Z")
+	if err != nil {
+		t.Fatalf("could not parse test time: %s", err)
+	}
+
 	type args struct {
 		account client.Resource
 	}
@@ -77,7 +82,7 @@ func TestClient_Create(t *testing.T) {
 		name        string
 		handlerFunc http.HandlerFunc
 		args        args
-		want        client.Resource
+		want        client.Payload
 		wantErr     bool
 	}{
 		{
@@ -94,32 +99,48 @@ func TestClient_Create(t *testing.T) {
 					BankID:     "123456",
 				}, // it doesn't matter what we send to the handlerFunc as long as it passes validation.
 			},
-			want: client.Resource{
-				Country:       "GB",
-				BaseCurrency:  "GBP",
-				BankID:        "89282dd",
-				BankIDCode:    "12221",
-				AccountNumber: "12345678",
-				BIC:           "bic1234",
-				IBAN:          "iban1234",
-				CustomerID:    "anuuidv4again",
-				Name: [4]string{
-					"line1",
-					"line2",
-					"line3",
-					"line4",
+			want: client.Payload{
+				Data: client.Data{
+					ID:             "a6c1a721-bb1b-41ef-bd11-800a1309ff9b",
+					OrganisationID: "7442ea6b-164a-4818-b470-d98abfbc24ae",
+					Type:           "accounts",
+					Version:        0,
+					CreatedOn:      testTime,
+					ModifiedOn:     testTime,
+					Attributes: client.Resource{
+						Country:       "GB",
+						BaseCurrency:  "GBP",
+						BankID:        "89282dd",
+						BankIDCode:    "12221",
+						AccountNumber: "12345678",
+						BIC:           "bic1234",
+						IBAN:          "iban1234",
+						CustomerID:    "anuuidv4again",
+						Name: [4]string{
+							"line1",
+							"line2",
+							"line3",
+							"line4",
+						},
+						AlternativeNames: [3]string{
+							"altname1",
+							"altname2",
+							"altname3",
+						},
+						AccountClassification:   "cop",
+						JointAccount:            false,
+						AccountMatchingOptOut:   false,
+						SecondaryIdentification: "some custom name",
+						Switched:                false,
+						Status:                  "confirmed",
+					},
 				},
-				AlternativeNames: [3]string{
-					"altname1",
-					"altname2",
-					"altname3",
+				Links: client.Links{
+					Self:  "https://selflink.com/resource",
+					First: "https://firstlink.com/resource",
+					Next:  "https://nextlink.com/resource",
+					Last:  "https://lastlink.com/resource",
 				},
-				AccountClassification:   "cop",
-				JointAccount:            false,
-				AccountMatchingOptOut:   false,
-				SecondaryIdentification: "some custom name",
-				Switched:                false,
-				Status:                  "confirmed",
 			},
 			wantErr: false,
 		},
@@ -136,7 +157,7 @@ func TestClient_Create(t *testing.T) {
 					BankID:     "123456",
 				}, // it doesn't matter what we send to the handlerFunc as long as it passes validation.
 			},
-			want:    client.Resource{},
+			want:    client.Payload{},
 			wantErr: true,
 		},
 		{
@@ -153,14 +174,14 @@ func TestClient_Create(t *testing.T) {
 					BankID:     "123456",
 				}, // it doesn't matter what we send to the handlerFunc as long as it passes validation.
 			},
-			want:    client.Resource{},
+			want:    client.Payload{},
 			wantErr: true,
 		},
 		{
 			name: "returns error if server responds with non json body",
 			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusCreated)
-				fmt.Fprint(w, "not a json")
+				_, _ = fmt.Fprint(w, "not a json")
 			},
 			args: args{
 				account: client.Resource{
@@ -170,14 +191,14 @@ func TestClient_Create(t *testing.T) {
 					BankID:     "123456",
 				}, // it doesn't matter what we send to the handlerFunc as long as it passes validation.
 			},
-			want:    client.Resource{},
+			want:    client.Payload{},
 			wantErr: true,
 		},
 		{
 			name: "returns error if server responds with json that would result in an empty Data attribute",
 			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusCreated)
-				fmt.Fprint(w, `{"error":"a string, but not something that can become a Payload"}`)
+				_, _ = fmt.Fprint(w, `{"error":"a string, but not something that can become a Payload"}`)
 			},
 			args: args{
 				account: client.Resource{
@@ -187,14 +208,14 @@ func TestClient_Create(t *testing.T) {
 					BankID:     "123456",
 				}, // it doesn't matter what we send to the handlerFunc as long as it passes validation.
 			},
-			want:    client.Resource{},
+			want:    client.Payload{},
 			wantErr: true,
 		},
 		{
 			name: "returns error if server responds with json that would result in an empty Data.Attributes field",
 			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusCreated)
-				fmt.Fprint(w, `{"data":{"id": "a string, but not something that can become a Payload"}}`)
+				_, _ = fmt.Fprint(w, `{"data":{"id": "a string, but not something that can become a Payload"}}`)
 			},
 			args: args{
 				account: client.Resource{
@@ -204,7 +225,7 @@ func TestClient_Create(t *testing.T) {
 					BankID:     "123456",
 				}, // it doesn't matter what we send to the handlerFunc as long as it passes validation.
 			},
-			want:    client.Resource{},
+			want:    client.Payload{},
 			wantErr: true,
 		},
 		{
@@ -220,7 +241,7 @@ func TestClient_Create(t *testing.T) {
 					BankID:     "123456",
 				}, // it doesn't matter what we send to the handlerFunc as long as it passes validation.
 			},
-			want:    client.Resource{},
+			want:    client.Payload{},
 			wantErr: true,
 		},
 	}
@@ -267,7 +288,7 @@ func TestClient_CreateBadURL(t *testing.T) {
 		name        string
 		handlerFunc http.HandlerFunc
 		args        args
-		want        client.Resource
+		want        client.Payload
 		wantErr     bool
 	}{
 		{
@@ -284,7 +305,7 @@ func TestClient_CreateBadURL(t *testing.T) {
 					BankID:     "123456",
 				}, // it doesn't matter what we send to the handlerFunc as long as it passes validation.
 			},
-			want:    client.Resource{},
+			want:    client.Payload{},
 			wantErr: true,
 		},
 	}
@@ -309,7 +330,6 @@ func TestClient_CreateBadURL(t *testing.T) {
 				assert.NoError(t, err)
 			}
 
-			fmt.Printf("%v", err)
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -321,6 +341,11 @@ func TestClient_Fetch(t *testing.T) {
 		t.Fatalf("could not load gmt location: %s", err)
 	}
 
+	testTime, err := time.Parse(time.RFC3339, "2020-05-06T09:28:13.843Z")
+	if err != nil {
+		t.Fatalf("could not parse test time: %s", err)
+	}
+
 	type args struct {
 		accountID string
 	}
@@ -329,44 +354,60 @@ func TestClient_Fetch(t *testing.T) {
 		name        string
 		handlerFunc http.HandlerFunc
 		args        args
-		want        client.Resource
+		want        client.Payload
 		wantErr     bool
 	}{
 		{
 			name: "correctly returns a resource by id",
 			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
-				fmt.Fprint(w, returnCompactFile(t, "./testdata/payload.json"))
+				_, _ = fmt.Fprint(w, returnCompactFile(t, "./testdata/payload.json"))
 			},
 			args: args{
 				accountID: "uuidv4accountid", // doesn't matter what we pass in here for the time being.
 			},
-			want: client.Resource{
-				Country:       "GB",
-				BaseCurrency:  "GBP",
-				BankID:        "89282dd",
-				BankIDCode:    "12221",
-				AccountNumber: "12345678",
-				BIC:           "bic1234",
-				IBAN:          "iban1234",
-				CustomerID:    "anuuidv4again",
-				Name: [4]string{
-					"line1",
-					"line2",
-					"line3",
-					"line4",
+			want: client.Payload{
+				Data: client.Data{
+					ID:             "a6c1a721-bb1b-41ef-bd11-800a1309ff9b",
+					OrganisationID: "7442ea6b-164a-4818-b470-d98abfbc24ae",
+					Type:           "accounts",
+					Version:        0,
+					CreatedOn:      testTime,
+					ModifiedOn:     testTime,
+					Attributes: client.Resource{
+						Country:       "GB",
+						BaseCurrency:  "GBP",
+						BankID:        "89282dd",
+						BankIDCode:    "12221",
+						AccountNumber: "12345678",
+						BIC:           "bic1234",
+						IBAN:          "iban1234",
+						CustomerID:    "anuuidv4again",
+						Name: [4]string{
+							"line1",
+							"line2",
+							"line3",
+							"line4",
+						},
+						AlternativeNames: [3]string{
+							"altname1",
+							"altname2",
+							"altname3",
+						},
+						AccountClassification:   "cop",
+						JointAccount:            false,
+						AccountMatchingOptOut:   false,
+						SecondaryIdentification: "some custom name",
+						Switched:                false,
+						Status:                  "confirmed",
+					},
 				},
-				AlternativeNames: [3]string{
-					"altname1",
-					"altname2",
-					"altname3",
+				Links: client.Links{
+					Self:  "https://selflink.com/resource",
+					First: "https://firstlink.com/resource",
+					Next:  "https://nextlink.com/resource",
+					Last:  "https://lastlink.com/resource",
 				},
-				AccountClassification:   "cop",
-				JointAccount:            false,
-				AccountMatchingOptOut:   false,
-				SecondaryIdentification: "some custom name",
-				Switched:                false,
-				Status:                  "confirmed",
 			},
 			wantErr: false,
 		},
@@ -375,12 +416,12 @@ func TestClient_Fetch(t *testing.T) {
 			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
 				time.Sleep((testTimeoutMs + 100) * time.Millisecond)
 				w.WriteHeader(http.StatusOK)
-				fmt.Fprint(w, returnCompactFile(t, "./testdata/payload.json"))
+				_, _ = fmt.Fprint(w, returnCompactFile(t, "./testdata/payload.json"))
 			},
 			args: args{
 				accountID: "uuidv4accountid", // doesn't matter what we pass in here for the time being.
 			},
-			want:    client.Resource{},
+			want:    client.Payload{},
 			wantErr: true,
 		},
 		{
@@ -391,19 +432,19 @@ func TestClient_Fetch(t *testing.T) {
 			args: args{
 				accountID: "uuidv4accountid", // doesn't matter what we pass in here for the time being.
 			},
-			want:    client.Resource{},
+			want:    client.Payload{},
 			wantErr: true,
 		},
 		{
 			name: "returns error if response is 200 code but not a json",
 			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
-				fmt.Fprint(w, "not a json")
+				_, _ = fmt.Fprint(w, "not a json")
 			},
 			args: args{
 				accountID: "uuidv4accountid", // doesn't matter what we pass in here for the time being.
 			},
-			want:    client.Resource{},
+			want:    client.Payload{},
 			wantErr: true,
 		},
 		{
@@ -414,43 +455,43 @@ func TestClient_Fetch(t *testing.T) {
 			args: args{
 				accountID: "uuidv4accountid", // doesn't matter what we pass in here for the time being.
 			},
-			want:    client.Resource{},
+			want:    client.Payload{},
 			wantErr: true,
 		},
 		{
 			name: "returns error if response is 200 code but json can't be populated into a meaningful resource",
 			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
-				fmt.Fprint(w, `{"error":"not data"}`)
+				_, _ = fmt.Fprint(w, `{"error":"not data"}`)
 			},
 			args: args{
 				accountID: "uuidv4accountid", // doesn't matter what we pass in here for the time being.
 			},
-			want:    client.Resource{},
+			want:    client.Payload{},
 			wantErr: true,
 		},
 		{
 			name: "returns error if response is 200 code but json can't be populated into a meaningful resource",
 			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
-				fmt.Fprint(w, `{"data":{"randomKey": "not data"}}`)
+				_, _ = fmt.Fprint(w, `{"data":{"randomKey": "not data"}}`)
 			},
 			args: args{
 				accountID: "uuidv4accountid", // doesn't matter what we pass in here for the time being.
 			},
-			want:    client.Resource{},
+			want:    client.Payload{},
 			wantErr: true,
 		},
 		{
 			name: "returns error if response is 200 code but json can't be populated into a meaningful resource",
 			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
-				fmt.Fprint(w, `{"data":{"id": "uuidve-missingattributes"}}`)
+				_, _ = fmt.Fprint(w, `{"data":{"id": "uuidve-missingattributes"}}`)
 			},
 			args: args{
 				accountID: "uuidv4accountid", // doesn't matter what we pass in here for the time being.
 			},
-			want:    client.Resource{},
+			want:    client.Payload{},
 			wantErr: true,
 		},
 	}
@@ -495,7 +536,7 @@ func TestClient_FetchBadURL(t *testing.T) {
 		name        string
 		handlerFunc http.HandlerFunc
 		args        args
-		want        client.Resource
+		want        client.Payload
 		wantErr     bool
 	}{
 		{
@@ -507,7 +548,7 @@ func TestClient_FetchBadURL(t *testing.T) {
 			args: args{
 				accountID: "uuidv4", // does not matter for this test.
 			},
-			want:    client.Resource{},
+			want:    client.Payload{},
 			wantErr: true,
 		},
 	}
@@ -532,7 +573,6 @@ func TestClient_FetchBadURL(t *testing.T) {
 				assert.NoError(t, err)
 			}
 
-			fmt.Printf("%v", err)
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -668,6 +708,16 @@ func TestClient_List(t *testing.T) {
 		t.Fatalf("could not load gmt location: %s", err)
 	}
 
+	testTime, err := time.Parse(time.RFC3339, "2020-05-06T09:28:13.843Z")
+	if err != nil {
+		t.Fatalf("could not parse test time: %s", err)
+	}
+
+	testTime2, err := time.Parse(time.RFC3339, "2020-08-06T09:28:13.843Z")
+	if err != nil {
+		t.Fatalf("could not parse test time2: %s", err)
+	}
+
 	type args struct {
 		pageNumber uint
 		pageSize   uint
@@ -677,7 +727,7 @@ func TestClient_List(t *testing.T) {
 		name        string
 		handlerFunc http.HandlerFunc
 		args        args
-		want        []client.Resource
+		want        client.MultiPayload
 		wantErr     bool
 	}{
 		{
@@ -690,62 +740,84 @@ func TestClient_List(t *testing.T) {
 				pageNumber: 1,
 				pageSize:   2,
 			}, // does not matter what these are.
-			want: []client.Resource{
-				{
-					Country:       "GB",
-					BaseCurrency:  "GBP",
-					BankID:        "89282dd",
-					BankIDCode:    "12221",
-					AccountNumber: "12345678",
-					BIC:           "bic1234",
-					IBAN:          "iban1234",
-					CustomerID:    "anuuidv4again",
-					Name: [4]string{
-						"line1",
-						"line2",
-						"line3",
-						"line4",
+			want: client.MultiPayload{
+				Data: []client.Data{
+					{
+						ID:             "a6c1a721-bb1b-41ef-bd11-800a1309ff9b",
+						OrganisationID: "7442ea6b-164a-4818-b470-d98abfbc24ae",
+						Type:           "accounts",
+						Version:        0,
+						CreatedOn:      testTime,
+						ModifiedOn:     testTime,
+						Attributes: client.Resource{
+							Country:       "GB",
+							BaseCurrency:  "GBP",
+							BankID:        "89282dd",
+							BankIDCode:    "12221",
+							AccountNumber: "12345678",
+							BIC:           "bic1234",
+							IBAN:          "iban1234",
+							CustomerID:    "anuuidv4again",
+							Name: [4]string{
+								"line1",
+								"line2",
+								"line3",
+								"line4",
+							},
+							AlternativeNames: [3]string{
+								"altname1",
+								"altname2",
+								"altname3",
+							},
+							AccountClassification:   "cop",
+							JointAccount:            false,
+							AccountMatchingOptOut:   false,
+							SecondaryIdentification: "some custom name",
+							Switched:                false,
+							Status:                  "confirmed",
+						},
 					},
-					AlternativeNames: [3]string{
-						"altname1",
-						"altname2",
-						"altname3",
+					{
+						ID:             "ffa7706b-d8fc-40b2-be6b-67d2a628cadf",
+						OrganisationID: "7442ea6b-164a-4818-b470-d98abfbc24ae",
+						Type:           "accounts",
+						Version:        0,
+						CreatedOn:      testTime2,
+						ModifiedOn:     testTime2,
+						Attributes: client.Resource{
+							Country:       "GB",
+							BaseCurrency:  "GBP",
+							BankID:        "89282dd",
+							BankIDCode:    "999999",
+							AccountNumber: "87654321",
+							BIC:           "bic5678",
+							IBAN:          "iban5678",
+							CustomerID:    "anuuidv4again",
+							Name: [4]string{
+								"line1-2",
+								"line2-2",
+								"line3-2",
+								"line4-2",
+							},
+							AlternativeNames: [3]string{
+								"altname1-2",
+								"altname2-2",
+								"altname3-2",
+							},
+							AccountClassification:   "cop",
+							JointAccount:            true,
+							AccountMatchingOptOut:   true,
+							SecondaryIdentification: "another custom name",
+							Switched:                true,
+							Status:                  "confirmed",
+						},
 					},
-					AccountClassification:   "cop",
-					JointAccount:            false,
-					AccountMatchingOptOut:   false,
-					SecondaryIdentification: "some custom name",
-					Switched:                false,
-					Status:                  "confirmed",
 				},
-
-				{
-
-					Country:       "GB",
-					BaseCurrency:  "GBP",
-					BankID:        "89282dd",
-					BankIDCode:    "999999",
-					AccountNumber: "87654321",
-					BIC:           "bic5678",
-					IBAN:          "iban5678",
-					CustomerID:    "anuuidv4again",
-					Name: [4]string{
-						"line1-2",
-						"line2-2",
-						"line3-2",
-						"line4-2",
-					},
-					AlternativeNames: [3]string{
-						"altname1-2",
-						"altname2-2",
-						"altname3-2",
-					},
-					AccountClassification:   "cop",
-					JointAccount:            true,
-					AccountMatchingOptOut:   true,
-					SecondaryIdentification: "another custom name",
-					Switched:                true,
-					Status:                  "confirmed",
+				Links: client.Links{
+					Self:  "https://selflink.com/resource",
+					First: "https://firstlink.com/resource",
+					Next:  "https://nextlink.com/resource",
+					Last:  "https://lastlink.com/resource",
 				},
 			},
 			wantErr: false,
@@ -759,7 +831,7 @@ func TestClient_List(t *testing.T) {
 				pageNumber: 1,
 				pageSize:   2,
 			}, // does not matter what these are.
-			want:    nil,
+			want:    client.MultiPayload{},
 			wantErr: true,
 		},
 		{
@@ -773,7 +845,7 @@ func TestClient_List(t *testing.T) {
 				pageNumber: 1,
 				pageSize:   2,
 			}, // does not matter what these are.
-			want:    nil,
+			want:    client.MultiPayload{},
 			wantErr: true,
 		},
 		{
@@ -786,7 +858,7 @@ func TestClient_List(t *testing.T) {
 				pageNumber: 1,
 				pageSize:   2,
 			}, // does not matter what these are.
-			want:    nil,
+			want:    client.MultiPayload{},
 			wantErr: true,
 		},
 		{
@@ -799,7 +871,7 @@ func TestClient_List(t *testing.T) {
 				pageNumber: 1,
 				pageSize:   2,
 			}, // does not matter what these are.
-			want:    nil,
+			want:    client.MultiPayload{},
 			wantErr: true,
 		},
 		{
@@ -812,7 +884,7 @@ func TestClient_List(t *testing.T) {
 				pageNumber: 1,
 				pageSize:   2,
 			}, // does not matter what these are.
-			want:    nil,
+			want:    client.MultiPayload{},
 			wantErr: true,
 		},
 		{
@@ -825,7 +897,7 @@ func TestClient_List(t *testing.T) {
 				pageNumber: 1,
 				pageSize:   2,
 			}, // does not matter what these are.
-			want:    nil,
+			want:    client.MultiPayload{},
 			wantErr: true,
 		},
 		{
@@ -838,7 +910,7 @@ func TestClient_List(t *testing.T) {
 				pageNumber: 1,
 				pageSize:   2,
 			}, // does not matter what these are.
-			want:    nil,
+			want:    client.MultiPayload{},
 			wantErr: true,
 		},
 		{
@@ -851,7 +923,7 @@ func TestClient_List(t *testing.T) {
 				pageNumber: 1,
 				pageSize:   2,
 			}, // does not matter what these are.
-			want:    nil,
+			want:    client.MultiPayload{},
 			wantErr: true,
 		},
 	}
@@ -895,7 +967,7 @@ func TestClient_ListBadURL(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    []client.Resource
+		want    client.MultiPayload
 		wantErr bool
 	}{
 		{
@@ -904,7 +976,7 @@ func TestClient_ListBadURL(t *testing.T) {
 				pageNumber: 1,
 				pageSize:   2,
 			}, // does not matter what these are.
-			want:    nil,
+			want:    client.MultiPayload{},
 			wantErr: true,
 		},
 	}
