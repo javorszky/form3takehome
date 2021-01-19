@@ -538,6 +538,130 @@ func TestClient_FetchBadURL(t *testing.T) {
 	}
 }
 
+func TestClient_Delete(t *testing.T) {
+	gmtLoc, err := time.LoadLocation("GMT")
+	if err != nil {
+		t.Fatalf("could not load gmt location: %s", err)
+	}
+
+	type args struct {
+		accountID string
+		version   uint
+	}
+
+	tests := []struct {
+		name        string
+		handlerFunc http.HandlerFunc
+		args        args
+		wantErr     bool
+	}{
+		{
+			name: "correctly returns response from request",
+			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusNoContent)
+			},
+			args: args{
+				accountID: "uuidv4accountid",
+				version:   3,
+			}, // does not matter what we pass in for these tests.
+			wantErr: false,
+		},
+		{
+			name: "returns error if the response is not a 204 no content",
+			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusConflict)
+			},
+			args: args{
+				accountID: "uuidv4accountid",
+				version:   3,
+			}, // does not matter what we pass in for these tests.
+			wantErr: true,
+		},
+		{
+			name: "returns error if the response takes longer than the timeout",
+			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
+				time.Sleep((testTimeoutMs + 100) * time.Millisecond)
+				w.WriteHeader(http.StatusNoContent)
+			},
+			args: args{
+				accountID: "uuidv4accountid",
+				version:   3,
+			}, // does not matter what we pass in for these tests.
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ts := httptest.NewServer(tt.handlerFunc)
+			defer ts.Close()
+
+			c := client.Client{
+				BaseURL:        ts.URL,
+				OrganisationID: "orgid",
+				HttpClient: http.Client{
+					Timeout: testTimeoutMs * time.Millisecond,
+				},
+				DateLocation: gmtLoc,
+			}
+
+			err := c.Delete(tt.args.accountID, tt.args.version)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestClient_DeleteBadURL(t *testing.T) {
+	gmtLoc, err := time.LoadLocation("GMT")
+	if err != nil {
+		t.Fatalf("could not load gmt location: %s", err)
+	}
+
+	type args struct {
+		accountID string
+		version   uint
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "returns error if the base url is wrongly configured",
+			args: args{
+				accountID: "uuidv4accountid",
+				version:   3,
+			}, // does not matter what we pass in for these tests.
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := client.Client{
+				BaseURL:        "htt@ps:bla//",
+				OrganisationID: "orgid",
+				HttpClient: http.Client{
+					Timeout: testTimeoutMs * time.Millisecond,
+				},
+				DateLocation: gmtLoc,
+			}
+
+			err := c.Delete(tt.args.accountID, tt.args.version)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
 func returnCompactFile(t *testing.T, filename string) string {
 	t.Helper()
 

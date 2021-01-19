@@ -458,7 +458,6 @@ func Test_marshalPayload(t *testing.T) {
 
 			if tt.wantErr {
 				assert.Error(t, err)
-				return
 			} else {
 				assert.NoError(t, err)
 			}
