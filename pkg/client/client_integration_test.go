@@ -229,12 +229,18 @@ func TestClient_IntegrationCreateFetchListDelete(t *testing.T) {
 
 			// and check that they are indeed missing in two different ways
 			for _, payloadItemToCheckAfterDelete := range payloadsHelper {
-				_, err := c.Fetch(payloadItemToCheckAfterDelete.Data.ID)
-				assert.Errorf(t, err, "fetch should have returned an error for account with id %s", payloadItemToCheckAfterDelete.Data.ID)
+				_, errChecked := c.Fetch(payloadItemToCheckAfterDelete.Data.ID)
+				assert.Errorf(
+					t,
+					errChecked,
+					"fetch should have returned an error for account with id %s",
+					payloadItemToCheckAfterDelete.Data.ID,
+				)
 			}
 
 			// and with list
 			deletedList, err := c.List(0, 100)
+			assert.NoError(t, err)
 			assert.Equal(t, 0, len(deletedList.Data))
 		})
 	}
