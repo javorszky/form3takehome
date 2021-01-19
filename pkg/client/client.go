@@ -70,21 +70,9 @@ func (c Client) Create(account Resource) (Payload, error) {
 		return Payload{}, fmt.Errorf("client.Create: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(
-		context.TODO(),
-		http.MethodPost,
-		fmt.Sprintf("%s%s", c.BaseURL, createEndpoint),
-		jsonPayload,
-	)
+	resp, err := c.do(http.MethodPost, createEndpoint, jsonPayload)
 	if err != nil {
-		return Payload{}, fmt.Errorf("client.Create: newRequestWithContext: %w", err)
-	}
-
-	req = c.addHeaders(req)
-
-	resp, err := c.HttpClient.Do(req)
-	if err != nil {
-		return Payload{}, fmt.Errorf("client.Create c.HttpClient.Do: %w", err)
+		return Payload{}, fmt.Errorf("client.Create: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusCreated {
@@ -104,21 +92,9 @@ func (c Client) Create(account Resource) (Payload, error) {
 func (c Client) List(pageNumber, pageSize uint) (MultiPayload, error) {
 	requestPath := fmt.Sprintf(listEndpoint, pageNumber, pageSize)
 
-	req, err := http.NewRequestWithContext(
-		context.TODO(),
-		http.MethodGet,
-		fmt.Sprintf("%s%s", c.BaseURL, requestPath),
-		nil,
-	)
+	resp, err := c.do(http.MethodGet, requestPath, nil)
 	if err != nil {
-		return MultiPayload{}, fmt.Errorf("client.List http.NewRequestWithContext: %w", err)
-	}
-
-	req = c.addHeaders(req)
-
-	resp, err := c.HttpClient.Do(req)
-	if err != nil {
-		return MultiPayload{}, fmt.Errorf("client.List httpClient.Do: %w", err)
+		return MultiPayload{}, fmt.Errorf("client.List: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -137,19 +113,7 @@ func (c Client) List(pageNumber, pageSize uint) (MultiPayload, error) {
 func (c Client) Fetch(accountID string) (Payload, error) {
 	requestPath := fmt.Sprintf(fetchEndpoint, accountID)
 
-	req, err := http.NewRequestWithContext(
-		context.TODO(),
-		http.MethodGet,
-		fmt.Sprintf("%s%s", c.BaseURL, requestPath),
-		nil,
-	)
-	if err != nil {
-		return Payload{}, fmt.Errorf("client.Fetch http.NewRequestWithContext: %w", err)
-	}
-
-	req = c.addHeaders(req)
-
-	resp, err := c.HttpClient.Do(req)
+	resp, err := c.do(http.MethodGet, requestPath, nil)
 	if err != nil {
 		return Payload{}, fmt.Errorf("client.Fetch httpClient.Do: %w", err)
 	}
@@ -171,21 +135,9 @@ func (c Client) Fetch(accountID string) (Payload, error) {
 func (c Client) Delete(accountID string, version uint) error {
 	requestPath := fmt.Sprintf(deleteEndpoint, accountID, version)
 
-	req, err := http.NewRequestWithContext(
-		context.Background(),
-		http.MethodDelete,
-		fmt.Sprintf("%s%s", c.BaseURL, requestPath),
-		nil,
-	)
+	resp, err := c.do(http.MethodDelete, requestPath, nil)
 	if err != nil {
-		return fmt.Errorf("client.Delete http.NewRequestWithContext: %w", err)
-	}
-
-	req = c.addHeaders(req)
-
-	resp, err := c.HttpClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("client.Delete httpClient.Do: %w", err)
+		return fmt.Errorf("client.Delete: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusNoContent {
@@ -281,4 +233,26 @@ func unmarshalMultiPayload(r io.Reader) (MultiPayload, error) {
 	}
 
 	return mp, nil
+}
+
+// do is a generic method to handle network calls.
+func (c Client) do(method, endpoint string, payload io.Reader) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(
+		context.Background(),
+		method,
+		fmt.Sprintf("%s%s", c.BaseURL, endpoint),
+		payload,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("client.do http.NewRequestWithContext: %w", err)
+	}
+
+	req = c.addHeaders(req)
+
+	resp, err := c.HttpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("client.do httpClient.Do: %w", err)
+	}
+
+	return resp, nil
 }
