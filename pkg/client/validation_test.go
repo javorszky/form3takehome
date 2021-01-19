@@ -18,6 +18,7 @@ func TestValidateResource(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
+		// GB
 		{
 			name: "GB is valid when all fields are valid, account number and iban provided",
 			args: args{
