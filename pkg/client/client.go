@@ -239,7 +239,7 @@ func unmarshalMultiPayload(r io.Reader) (MultiPayload, error) {
 	}
 
 	if mp.Data == nil {
-		return MultiPayload{}, errors.New("unmarshalMultiPayload: there is no Data on the decoded MultiPayload")
+		return MultiPayload{}, nil
 	}
 
 	for _, d := range mp.Data {

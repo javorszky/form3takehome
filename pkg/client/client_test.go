@@ -823,6 +823,19 @@ func TestClient_List(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "correctly returns empty list of resources",
+			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				_, _ = fmt.Fprint(w, `{"data":null}`)
+			},
+			args: args{
+				pageNumber: 0,
+				pageSize:   100,
+			}, // does not matter what these are.
+			want:    client.MultiPayload{},
+			wantErr: false,
+		},
+		{
 			name: "returns error if the response code is not 200",
 			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusNotFound)
@@ -862,19 +875,6 @@ func TestClient_List(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "returns error if the response is json, but can't be unmarshaled into a multipayload (no data key)",
-			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-				_, _ = fmt.Fprint(w, `{"error":"not payload"}`)
-			},
-			args: args{
-				pageNumber: 1,
-				pageSize:   2,
-			}, // does not matter what these are.
-			want:    client.MultiPayload{},
-			wantErr: true,
-		},
-		{
 			name: "returns error if the response is json, but can't be unmarshaled into a multipayload (data is not array)",
 			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
@@ -892,19 +892,6 @@ func TestClient_List(t *testing.T) {
 			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
 				_, _ = fmt.Fprint(w, `{"data":["not an object"]}`)
-			},
-			args: args{
-				pageNumber: 1,
-				pageSize:   2,
-			}, // does not matter what these are.
-			want:    client.MultiPayload{},
-			wantErr: true,
-		},
-		{
-			name: "error when response can't be unmarshaled into multipayload (data objects emtpy)",
-			handlerFunc: func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-				_, _ = fmt.Fprint(w, `{"data":[{"randomkey":"notdata"}]}`)
 			},
 			args: args{
 				pageNumber: 1,
