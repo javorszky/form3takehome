@@ -224,7 +224,8 @@ func TestClient_IntegrationCreateFetchListDelete(t *testing.T) {
 
 			// now delete all of them
 			for _, payloadItemToDelete := range payloadsHelper {
-				c.Delete(payloadItemToDelete.Data.ID, uint(payloadItemToDelete.Data.Version))
+				dErr := c.Delete(payloadItemToDelete.Data.ID, uint(payloadItemToDelete.Data.Version))
+				assert.NoError(t, dErr)
 			}
 
 			// and check that they are indeed missing in two different ways
