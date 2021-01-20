@@ -132,3 +132,9 @@ Finally there's one test that goes through all of the functions against the actu
 Note that in order for the test to be successful, the service needs to start with a clean slate, ie no data in it from previous runs. This is a side effect of there being no authentication, and the list call can't limit the results to those that belong to a given organisation ID.
 
 I've created enough tests that I would expect to see on a production system. Currently that means 100% of the files, and a total of 98.6% of statements. The ones that aren't covered are statements that I see no conceivable way of hitting outside of really obscure edge cases.
+
+### Not implemented
+
+Authentication, as it was requested.
+
+I also did not implement backoff mechanism. I see the API documentation mentions a library that does exponential backoff and retry, but given it's a take home exercise, it wasn't a priority.
