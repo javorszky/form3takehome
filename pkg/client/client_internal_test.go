@@ -26,12 +26,12 @@ func TestClient_addHeaders(t *testing.T) {
 
 	gmtLoc, err := time.LoadLocation("GMT")
 	if err != nil {
-		t.Fatalf("could not load GMT location: %s", err)
+		assert.FailNowf(t, "could not load GMT location", "error: %s", err)
 	}
 
 	requestNoBody, err := http.NewRequestWithContext(context.TODO(), http.MethodPost, testURL, nil)
 	if err != nil {
-		t.Fatalf("could not create a test request with no body: %s", err)
+		assert.FailNowf(t, "could not create test request with no body", "error: %s", err)
 	}
 
 	requestBody, err := http.NewRequestWithContext(
@@ -41,7 +41,7 @@ func TestClient_addHeaders(t *testing.T) {
 		strings.NewReader(testJSONBody),
 	)
 	if err != nil {
-		t.Fatalf("could not create a test request with body: %s", err)
+		assert.FailNowf(t, "could not create test request with body", "error: %s", err)
 	}
 
 	requestEmptyBody, err := http.NewRequestWithContext(
@@ -51,7 +51,7 @@ func TestClient_addHeaders(t *testing.T) {
 		strings.NewReader(""),
 	)
 	if err != nil {
-		t.Fatalf("could not create a test request with empty body: %s", err)
+		assert.FailNowf(t, "could not create test request with empty body", "error: %s", err)
 	}
 
 	type fields struct {
@@ -128,11 +128,16 @@ func TestClient_addHeaders(t *testing.T) {
 			// Check the Date header separately
 			headerDate := got.Header.Get("Date")
 			if !strings.HasSuffix(headerDate, "GMT") {
-				t.Errorf("header date should end with GMT. It doesn't. Date was %s", headerDate)
+				assert.FailNowf(t, "header date should end with GMT. It doesn't", "error: %s", err)
 			}
 			parsedHeaderDate, err := time.Parse(time.RFC1123, headerDate)
 			if err != nil {
-				t.Fatalf("could not parse the header date into a time.Time struct: %s", err)
+				assert.FailNowf(
+					t,
+					"could not parse header date into a time.Time struct",
+					"error: %s",
+					err,
+				)
 			}
 			assert.WithinDuration(t, parsedHeaderDate, time.Now(), testHeaderDateThreshold*time.Second)
 		})
@@ -142,7 +147,7 @@ func TestClient_addHeaders(t *testing.T) {
 func Test_unmarshalPayload(t *testing.T) {
 	f, err := os.Open("./testdata/payload.json")
 	if err != nil {
-		t.Fatalf("could not open file: %s", err)
+		assert.FailNowf(t, "could not open file", "error: %s", err)
 	}
 
 	defer func() {
@@ -151,7 +156,7 @@ func Test_unmarshalPayload(t *testing.T) {
 
 	testTime, err := time.Parse(time.RFC3339, "2020-05-06T09:28:13.843Z")
 	if err != nil {
-		t.Fatalf("could not parse test time: %s", err)
+		assert.FailNowf(t, "could not parse test time", "error: %s", err)
 	}
 
 	type args struct {
@@ -239,7 +244,7 @@ func Test_unmarshalPayload(t *testing.T) {
 func Test_unmarshalMultiPayload(t *testing.T) {
 	f, err := os.Open("./testdata/multipayload.json")
 	if err != nil {
-		t.Fatalf("could not open file: %s", err)
+		assert.FailNowf(t, "could not open file", "error: %s", err)
 	}
 
 	defer func() {
@@ -248,12 +253,12 @@ func Test_unmarshalMultiPayload(t *testing.T) {
 
 	testTime, err := time.Parse(time.RFC3339, "2020-05-06T09:28:13.843Z")
 	if err != nil {
-		t.Fatalf("could not parse test time: %s", err)
+		assert.FailNowf(t, "could not parse test time", "error: %s", err)
 	}
 
 	testTime2, err := time.Parse(time.RFC3339, "2020-08-06T09:28:13.843Z")
 	if err != nil {
-		t.Fatalf("could not parse test time2: %s", err)
+		assert.FailNowf(t, "could not parse test time2", "error: %s", err)
 	}
 
 	type args struct {
@@ -379,12 +384,12 @@ func Test_unmarshalMultiPayload(t *testing.T) {
 func Test_marshalPayload(t *testing.T) {
 	testTime, err := time.Parse(time.RFC3339, "2020-05-06T09:28:13.843Z")
 	if err != nil {
-		t.Fatalf("could not parse test time: %s", err)
+		assert.FailNowf(t, "could not parse test time", "error: %s", err)
 	}
 
 	f, err := os.Open("./testdata/payload.json")
 	if err != nil {
-		t.Fatalf("could not open file: %s", err)
+		assert.FailNowf(t, "could not open file", "error: %s", err)
 	}
 
 	defer func() {
@@ -393,14 +398,14 @@ func Test_marshalPayload(t *testing.T) {
 
 	jsonPayload, err := ioutil.ReadAll(f)
 	if err != nil {
-		t.Fatalf("could not read file: %s", err)
+		assert.FailNowf(t, "could not read file contents", "error: %s", err)
 	}
 
 	var b bytes.Buffer
 
 	err = json.Compact(&b, jsonPayload)
 	if err != nil {
-		t.Fatalf("could not compact json data: %s", err)
+		assert.FailNowf(t, "could not compact json data", "error: %s", err)
 	}
 
 	type args struct {
@@ -476,7 +481,7 @@ func Test_marshalPayload(t *testing.T) {
 
 			gotJson, err := ioutil.ReadAll(got)
 			if err != nil {
-				t.Fatalf("could not read ioutil.Readall: %s", err)
+				assert.FailNowf(t, "could not read ioutil.readall contents", "error: %s", err)
 			}
 
 			assert.Equal(t, tt.want, string(gotJson))

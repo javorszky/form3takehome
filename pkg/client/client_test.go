@@ -22,7 +22,7 @@ const testTimeoutMs = 500
 func TestNew(t *testing.T) {
 	gmtLoc, err := time.LoadLocation("GMT")
 	if err != nil {
-		t.Fatalf("could not load GMT location")
+		assert.FailNowf(t, "could not load GMT location", "error: %s", err)
 	}
 
 	testClient := http.Client{
@@ -66,12 +66,12 @@ func TestNew(t *testing.T) {
 func TestClient_Create(t *testing.T) {
 	gmtLoc, err := time.LoadLocation("GMT")
 	if err != nil {
-		t.Fatalf("could not load gmt location: %s", err)
+		assert.FailNowf(t, "could not load GMT location", "error: %s", err)
 	}
 
 	testTime, err := time.Parse(time.RFC3339, "2020-05-06T09:28:13.843Z")
 	if err != nil {
-		t.Fatalf("could not parse test time: %s", err)
+		assert.FailNowf(t, "could not parse test time", "error: %s", err)
 	}
 
 	type args struct {
@@ -277,7 +277,7 @@ func TestClient_Create(t *testing.T) {
 func TestClient_CreateBadURL(t *testing.T) {
 	gmtLoc, err := time.LoadLocation("GMT")
 	if err != nil {
-		t.Fatalf("could not load gmt location: %s", err)
+		assert.FailNowf(t, "could not load GMT location", "error: %s", err)
 	}
 
 	type args struct {
@@ -338,12 +338,12 @@ func TestClient_CreateBadURL(t *testing.T) {
 func TestClient_Fetch(t *testing.T) {
 	gmtLoc, err := time.LoadLocation("GMT")
 	if err != nil {
-		t.Fatalf("could not load gmt location: %s", err)
+		assert.FailNowf(t, "could not load GMT location", "error: %s", err)
 	}
 
 	testTime, err := time.Parse(time.RFC3339, "2020-05-06T09:28:13.843Z")
 	if err != nil {
-		t.Fatalf("could not parse test time: %s", err)
+		assert.FailNowf(t, "could not parse test time", "error: %s", err)
 	}
 
 	type args struct {
@@ -525,7 +525,7 @@ func TestClient_Fetch(t *testing.T) {
 func TestClient_FetchBadURL(t *testing.T) {
 	gmtLoc, err := time.LoadLocation("GMT")
 	if err != nil {
-		t.Fatalf("could not load gmt location: %s", err)
+		assert.FailNowf(t, "could not load GMT location", "error: %s", err)
 	}
 
 	type args struct {
@@ -581,7 +581,7 @@ func TestClient_FetchBadURL(t *testing.T) {
 func TestClient_Delete(t *testing.T) {
 	gmtLoc, err := time.LoadLocation("GMT")
 	if err != nil {
-		t.Fatalf("could not load gmt location: %s", err)
+		assert.FailNowf(t, "could not load GMT location", "error: %s", err)
 	}
 
 	type args struct {
@@ -658,7 +658,7 @@ func TestClient_Delete(t *testing.T) {
 func TestClient_DeleteBadURL(t *testing.T) {
 	gmtLoc, err := time.LoadLocation("GMT")
 	if err != nil {
-		t.Fatalf("could not load gmt location: %s", err)
+		assert.FailNowf(t, "could not load GMT location", "error: %s", err)
 	}
 
 	type args struct {
@@ -705,17 +705,17 @@ func TestClient_DeleteBadURL(t *testing.T) {
 func TestClient_List(t *testing.T) {
 	gmtLoc, err := time.LoadLocation("GMT")
 	if err != nil {
-		t.Fatalf("could not load gmt location: %s", err)
+		assert.FailNowf(t, "could not load GMT location", "error: %s", err)
 	}
 
 	testTime, err := time.Parse(time.RFC3339, "2020-05-06T09:28:13.843Z")
 	if err != nil {
-		t.Fatalf("could not parse test time: %s", err)
+		assert.FailNowf(t, "could not parse test time", "error: %s", err)
 	}
 
 	testTime2, err := time.Parse(time.RFC3339, "2020-08-06T09:28:13.843Z")
 	if err != nil {
-		t.Fatalf("could not parse test time2: %s", err)
+		assert.FailNowf(t, "could not parse test time2", "error: %s", err)
 	}
 
 	type args struct {
@@ -957,7 +957,7 @@ func TestClient_List(t *testing.T) {
 func TestClient_ListBadURL(t *testing.T) {
 	gmtLoc, err := time.LoadLocation("GMT")
 	if err != nil {
-		t.Fatalf("could not load gmt location: %s", err)
+		assert.FailNowf(t, "could not load gmt location", "error: %s", err)
 	}
 
 	type args struct {
@@ -1010,7 +1010,7 @@ func returnCompactFile(t *testing.T, filename string) string {
 
 	f, err := os.Open(filename)
 	if err != nil {
-		t.Fatalf("could not open file: %s", err)
+		assert.FailNowf(t, "could not open file", "error: %s", err)
 	}
 
 	defer func() {
@@ -1019,14 +1019,14 @@ func returnCompactFile(t *testing.T, filename string) string {
 
 	content, err := ioutil.ReadAll(f)
 	if err != nil {
-		t.Fatalf("failed to read file contents: %s", err)
+		assert.FailNowf(t, "failed to read file contents", "error: %s", err)
 	}
 
 	var b bytes.Buffer
 
 	err = json.Compact(&b, content)
 	if err != nil {
-		t.Fatalf("failed to compact json data: %s", err)
+		assert.FailNowf(t, "failed to compact json data", "error: %s", err)
 	}
 
 	return b.String()

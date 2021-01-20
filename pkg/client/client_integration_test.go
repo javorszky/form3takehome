@@ -21,7 +21,7 @@ const (
 func TestClient_IntegrationCreateFetchListDelete(t *testing.T) {
 	gmtLoc, err := time.LoadLocation("GMT")
 	if err != nil {
-		t.Fatalf("could not load gmt location: %s", err)
+		assert.FailNowf(t, "could not load GMT location", "error: %s", err)
 	}
 
 	type args struct {
