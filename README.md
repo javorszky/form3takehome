@@ -121,7 +121,7 @@ This tests validation rules that the client I wrote applies to the payload befor
 
 #### 2. client internal
 
-This tests marshal and unmarshal methods. The point of these is to make sure that given a json, I get the correct struct back, or given a struct, I get correct json back. It's a way for me to rule out failures in case something goes wrong in code that uses these functions.
+These test marshal and unmarshal functions. The point of these is to make sure that given a json, I get the correct struct back, or given a struct, I get correct json back. It's a way for me to rule out failures in case something goes wrong in code that uses these functions.
 
 #### 3. client mocked
 
