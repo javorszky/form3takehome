@@ -2,6 +2,7 @@
 package client
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 )
@@ -235,7 +236,7 @@ func validateUS(account Resource) error {
 
 func bicRequired(r Resource, e error) (Resource, error) {
 	if r.BIC == "" {
-		return r, fmt.Errorf("BIC is required, was empty: %w", e)
+		return r, returnError("BIC is required, was empty", e)
 	}
 
 	return r, e
@@ -243,7 +244,7 @@ func bicRequired(r Resource, e error) (Resource, error) {
 
 func ibanNotSupported(r Resource, e error) (Resource, error) {
 	if r.IBAN != "" {
-		return r, fmt.Errorf("IBAN is not supported, got '%s': %w", r.IBAN, e)
+		return r, returnError(fmt.Sprintf("IBAN is not supported, got '%s'", r.IBAN), e)
 	}
 
 	return r, e
@@ -251,7 +252,7 @@ func ibanNotSupported(r Resource, e error) (Resource, error) {
 
 func bankIDNotSupported(r Resource, e error) (Resource, error) {
 	if r.BankID != "" {
-		return r, fmt.Errorf("bank ID is not supported, has to be empty. Got '%s': %w", r.BankID, e)
+		return r, returnError(fmt.Sprintf("bank ID is not supported, has to be empty. Got '%s'", r.BankID), e)
 	}
 
 	return r, e
@@ -259,7 +260,7 @@ func bankIDNotSupported(r Resource, e error) (Resource, error) {
 
 func bankIDCodeMust(r Resource, e error, bankIDCode string) (Resource, error) {
 	if r.BankIDCode != bankIDCode {
-		return r, fmt.Errorf("bank ID Code is not '%s', got %s: %w", bankIDCode, r.BankIDCode, e)
+		return r, returnError(fmt.Sprintf("bank ID Code is not '%s', got %s", bankIDCode, r.BankIDCode), e)
 	}
 
 	return r, e
@@ -267,7 +268,7 @@ func bankIDCodeMust(r Resource, e error, bankIDCode string) (Resource, error) {
 
 func bankIDCodeOptionalMust(r Resource, e error, bankIDCode string) (Resource, error) {
 	if r.BankIDCode != "" && r.BankIDCode != bankIDCode {
-		return r, fmt.Errorf("bank ID Code is not '%s', got '%s': %w", bankIDCode, r.BankIDCode, e)
+		return r, returnError(fmt.Sprintf("bank ID Code is not '%s', got '%s'", bankIDCode, r.BankIDCode), e)
 	}
 
 	return r, e
@@ -275,7 +276,7 @@ func bankIDCodeOptionalMust(r Resource, e error, bankIDCode string) (Resource, e
 
 func bankIDRequiredMust(r Resource, e error, pattern *regexp.Regexp) (Resource, error) {
 	if !pattern.MatchString(r.BankID) {
-		return r, fmt.Errorf("%s bank id is not in correct format. '%s': %w", r.Country, r.BankID, e)
+		return r, returnError(fmt.Sprintf("%s bank id is not in correct format. '%s'", r.Country, r.BankID), e)
 	}
 
 	return r, e
@@ -283,7 +284,7 @@ func bankIDRequiredMust(r Resource, e error, pattern *regexp.Regexp) (Resource, 
 
 func bankIDOptionalMust(r Resource, e error, pattern *regexp.Regexp) (Resource, error) {
 	if r.BankID != "" && !pattern.MatchString(r.BankID) {
-		return r, fmt.Errorf("%s bank id is not in correct format. '%s': %w", r.Country, r.BankID, e)
+		return r, returnError(fmt.Sprintf("%s bank id is not in correct format. '%s'", r.Country, r.BankID), e)
 	}
 
 	return r, e
@@ -291,8 +292,18 @@ func bankIDOptionalMust(r Resource, e error, pattern *regexp.Regexp) (Resource, 
 
 func accountNumberOptionalMust(r Resource, e error, pattern *regexp.Regexp) (Resource, error) {
 	if r.AccountNumber != "" && !pattern.MatchString(r.AccountNumber) {
-		return r, fmt.Errorf("%s account number is not in correct format. '%s': %w", r.Country, r.AccountNumber, e)
+		return r, returnError(fmt.Sprintf("%s account number is not in correct format. '%s'", r.Country, r.AccountNumber), e)
 	}
 
 	return r, e
+}
+
+// returnError is a convenience function that handles optional wrapped errors. If the error passed into the func is nil,
+// the returned error will not try to wrap a nil error with fmt.Errorf.
+func returnError(message string, wrapped error) error {
+	if wrapped == nil {
+		return errors.New(message)
+	}
+
+	return fmt.Errorf(message+": %w", wrapped)
 }
