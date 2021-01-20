@@ -1,5 +1,7 @@
 # Form3 Take Home Exercise
 
+[Jump to implementation notes.](#implementation-by-gabor-javorszky)
+
 ## Instructions
 The goal of this exercise is to write a client library in Go to access our fake account API, which is provided as a Docker
 container in the file `docker-compose.yaml` of this repository. Please refer to the
