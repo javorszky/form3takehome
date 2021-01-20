@@ -75,6 +75,10 @@ func (c Client) Create(account Resource) (Payload, error) {
 		return Payload{}, fmt.Errorf("client.Create: %w", err)
 	}
 
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
 	if resp.StatusCode != http.StatusCreated {
 		return Payload{}, fmt.Errorf("client.Create response unexpected response code: %d", resp.StatusCode)
 	}
@@ -96,6 +100,10 @@ func (c Client) List(pageNumber, pageSize uint) (MultiPayload, error) {
 	if err != nil {
 		return MultiPayload{}, fmt.Errorf("client.List: %w", err)
 	}
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return MultiPayload{}, fmt.Errorf("client.List unexpected http response status: %d", resp.StatusCode)
@@ -122,6 +130,10 @@ func (c Client) Fetch(accountID string) (Payload, error) {
 		return Payload{}, fmt.Errorf("client.Fetch unexpected response code: %d", resp.StatusCode)
 	}
 
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
 	p, err := unmarshalPayload(resp.Body)
 	if err != nil {
 		return Payload{}, fmt.Errorf("client.Fetch: %w", err)
@@ -139,6 +151,10 @@ func (c Client) Delete(accountID string, version uint) error {
 	if err != nil {
 		return fmt.Errorf("client.Delete: %w", err)
 	}
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("client.Delete unexpected response code: %d", resp.StatusCode)
