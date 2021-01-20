@@ -931,6 +931,7 @@ func TestClient_List(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ts := httptest.NewServer(tt.handlerFunc)
 			defer ts.Close()
+
 			c := client.Client{
 				BaseURL:        ts.URL,
 				OrganisationID: "orgid",
@@ -1011,7 +1012,10 @@ func returnCompactFile(t *testing.T, filename string) string {
 	if err != nil {
 		t.Fatalf("could not open file: %s", err)
 	}
-	defer f.Close()
+
+	defer func() {
+		_ = f.Close()
+	}()
 
 	content, err := ioutil.ReadAll(f)
 	if err != nil {

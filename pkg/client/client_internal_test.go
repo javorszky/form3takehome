@@ -145,6 +145,10 @@ func Test_unmarshalPayload(t *testing.T) {
 		t.Fatalf("could not open file: %s", err)
 	}
 
+	defer func() {
+		_ = f.Close()
+	}()
+
 	testTime, err := time.Parse(time.RFC3339, "2020-05-06T09:28:13.843Z")
 	if err != nil {
 		t.Fatalf("could not parse test time: %s", err)
@@ -237,6 +241,10 @@ func Test_unmarshalMultiPayload(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not open file: %s", err)
 	}
+
+	defer func() {
+		_ = f.Close()
+	}()
 
 	testTime, err := time.Parse(time.RFC3339, "2020-05-06T09:28:13.843Z")
 	if err != nil {
@@ -378,6 +386,10 @@ func Test_marshalPayload(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not open file: %s", err)
 	}
+
+	defer func() {
+		_ = f.Close()
+	}()
 
 	jsonPayload, err := ioutil.ReadAll(f)
 	if err != nil {
