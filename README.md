@@ -1,3 +1,11 @@
+# Feedback
+
+"No, thank you"
+
+> This is a functional example of a sample client library for interacting with the account API. It covers the range of functionality required with appropriate error checking. For a client library to be integrated with production services we would require the interface to provide more information about errors to determine appropriate actions to be taken - for example client or server errors to be distinguished through specific error types. It would also be useful to have timeout and cancellation options for individual requests. 
+> 
+> Unfortunately the test readability is insufficient to take this candidate forward in the recruitment process. While we appreciated the wide range of error scenarios covered, the structure of the sub-tests made these particularly difficult to maintain and restricted the scope of the tests, for example the range of assertions used on the error conditions returned from the client. 
+
 # Form3 Take Home Exercise
 
 [Jump to implementation notes.](#implementation-by-gabor-javorszky)
